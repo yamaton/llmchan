@@ -1,0 +1,22 @@
+[
+    {
+        "id": 1,
+        "name": "Smoothie",
+        "strategy": "Buy and Hold"
+    },
+    {
+        "id": 2,
+        "name": "Topic Focused",
+        "strategy": "Buy and Hold"
+    },
+    {
+        "id": 3,
+        "name": "Expand Horizon",
+        "strategy": "Buy and Hold"
+    },
+    {
+        "id": 4,
+        "name": "Dig deeper",
+        "strategy": "Buy and Hold"
+    }
+]
