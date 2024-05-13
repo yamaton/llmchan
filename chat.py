@@ -208,18 +208,17 @@ def _get_user_prompt(user: User, thread: Thread) -> str:
         role: {user.role}
 
         ### Thread format
-        Format the discussion with numbered posts and usernames as shown in the example. Use the "->" if replying to one or more posts.
-        Use "@" symbol followed by the username to indicate who is being responded to. Keep a comment 1 to 5 senstences long.
+        The discussion is in the form of temporally-ordered messages. You may use "->" in the first line to show reply explicitly to one or more posts. Participants are anonymous and no usernames is displayed. Keep a comment 1 to 5 senstences long.
 
         <example>
-        [1] ThreadOP
+        [1]
         Hey fellow patient gamers! I'm looking for some cheap and fun games on Steam that are worth the wait. Any recommendations?
 
-        [2] Indie_Enthusiast -> [1]
-        @PatientGamer42 Stardew Valley is a must-play! It's a charming farming RPG with tons of content and replayability. Plus, it's often on sale for under $10.
+        [2]
+        Stardew Valley is a must-play! It's a charming farming RPG with tons of content and replayability. Plus, it's often on sale for under $10.
 
-        [3] A_Newbie -> [1,2]
-        I have never heard of Stardew Valley. Can I play it with my XBox? What is Steam btw!?
+        [3] -> [2]
+        I have never heard of Stardew Valley. Can I play it on my XBox? What is Steam btw?
         </example>
     """
     return textwrap.dedent(s)
@@ -274,7 +273,7 @@ def format_post(post: Post) -> str:
         reply = f" -> [{numbers}]"
     else:
         reply = ""
-    return f"[{post.id}]{post.username}{reply}\n{post.text}"
+    return f"[{post.id}]{reply}\n{post.text}"
 
 
 def format_thread(thread: Thread) -> str:
