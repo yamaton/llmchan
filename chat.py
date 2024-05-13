@@ -22,6 +22,7 @@ from anthropic.types import Message as AnthropicMessage
 
 Model = Literal[
     "gpt-4-turbo-2024-04-09",
+    "gpt-4o-2024-05-13",
     "claude-3-opus-20240229",
 ]
 
