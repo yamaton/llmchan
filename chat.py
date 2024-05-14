@@ -11,14 +11,15 @@ import random
 import textwrap
 from typing import Literal
 
-import pydantic
+from pydantic import BaseModel, Field
 from openai import OpenAI
-from openai.types.chat import ChatCompletion
 from openai.types.chat import ChatCompletionMessageParam as OpenAIMessageParam
 from anthropic import Anthropic
 from anthropic.types import MessageParam as AnthropicMessageParam
 from anthropic.types import Message as AnthropicMessage
+from dotenv import load_dotenv
 
+load_dotenv()
 
 Model = Literal[
     "gpt-4-turbo-2024-04-09",
@@ -26,75 +27,71 @@ Model = Literal[
     "claude-3-opus-20240229",
 ]
 
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", None)
+if OPENAI_API_KEY is None:
+    raise ValueError("Failed to get env $OPENAI_API_KEY")
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", None)
+if ANTHROPIC_API_KEY is None:
+    raise ValueError("Failed to get env $ANTHROPIC_API_KEY")
 
-class Agent(pydantic.BaseModel):
-    """LLM agent"""
+TMP_MODEL = "gpt-4o-2024-05-13"
 
-    client: OpenAI | Anthropic
-    model: str
 
-    def __init__(self, model: Model, **data):
-        super().__init__(model=model, **data)
-        self.model = model
-        if model.startswith("gpt-4"):
-            api_key = os.environ.get("OPENAI_API_KEY")
-            if api_key is None:
-                raise ValueError("Failed to get env $OPENAI_API_KEY")
-            self.client = OpenAI(api_key=api_key)
-        elif model.startswith("claude"):
-            api_key = os.environ.get("ANTHROPIC_API_KEY")
-            if api_key is None:
-                raise ValueError("Failed to get env $ANTHROPIC_API_KEY")
-            self.client = Anthropic(api_key=api_key)
-        else:
-            # raise error
-            raise ValueError("Invalid model specified.")
+class Agent(BaseModel):
+    """OpenAI LLM Agent"""
+    model: Model = Field(TMP_MODEL, description="OpenAI LLM model name")
 
     def generate(self, prompt: str, prefix: str | None = None) -> str:
         """Generate a response based on the prompt."""
-        if isinstance(self.client, OpenAI):
-            msgs: list[OpenAIMessageParam] = [
-                {
-                    "role": "user",
-                    "content": prompt,
-                }
-            ]
-            resp: ChatCompletion = self.client.chat.completions.create(
-                messages=msgs,
-                model=self.model,
-                max_tokens=1024,
-                temperature=0,
-            )
-            res = resp.choices[0].message.content
-            if res is None:
-                raise ValueError("Failed to get a response from OpenAI LLM")
-            return res
+        client = OpenAI(api_key=OPENAI_API_KEY)
 
-        elif isinstance(self.client, Anthropic):
-            messages: list[AnthropicMessageParam] = [
-                {
-                    "role": "user",
-                    "content": prompt,
-                }
-            ]
-            if prefix:
-                response_message: AnthropicMessageParam = {
-                    "role": "assistant",
-                    "content": prefix,
-                }
-                messages.append(response_message)
-            response: AnthropicMessage = self.client.messages.create(
-                messages=messages,
-                model=self.model,
-                max_tokens=1024,
-                temperature=0.0,
-            )
-            return response.content[0].text
-        else:
-            raise ValueError("Invalid client type.")
+        messages: list[OpenAIMessageParam] = [{"role": "user", "content": prompt}]
+        logging.info("[LLM] Generating response from OpenAI LLM")
+
+        chat_completion = client.chat.completions.create(
+            messages=messages,
+            model=self.model,
+            max_tokens=1024,
+            temperature=0,
+        )
+
+        res = chat_completion.choices[0].message.content
+        if res is None:
+            raise ValueError("Failed to get a response from OpenAI LLM")
+        return res
 
 
-class User(pydantic.BaseModel):
+class AnthropicAgent(BaseModel):
+    """Anthropic LLM agent"""
+    model: Model = Field(TMP_MODEL, description="OpenAI LLM model name")
+
+    def generate(self, prompt: str, prefix: str | None = None) -> str:
+        """Generate a response based on the prompt."""
+        client = Anthropic(api_key=ANTHROPIC_API_KEY)
+        messages: list[AnthropicMessageParam] = [
+            {
+                "role": "user",
+                "content": prompt,
+            }
+        ]
+        if prefix:
+            response_message: AnthropicMessageParam = {
+                "role": "assistant",
+                "content": prefix,
+            }
+            messages.append(response_message)
+
+        logging.info("[LLM] Generating response from Anthropic LLM")
+        response: AnthropicMessage = client.messages.create(
+            messages=messages,
+            model=self.model,
+            max_tokens=1024,
+            temperature=0.0,
+        )
+        return response.content[0].text
+
+
+class User(BaseModel):
     """User as a chart participant."""
 
     character: str
@@ -103,10 +100,10 @@ class User(pydantic.BaseModel):
 
     def generate(self, prompt: str, prefix: str | None = None) -> str:
         """Get a LLM response"""
-        return self.agent.generate(prompt, prefix)
+        return self.agent.generate(prompt)
 
 
-class GameMaster(pydantic.BaseModel):
+class GameMaster(BaseModel):
     """Game master controlling who to post next."""
 
     strategy: str
@@ -117,14 +114,14 @@ class GameMaster(pydantic.BaseModel):
         return self.agent.generate(prompt, prefix)
 
 
-class System(pydantic.BaseModel):
+class System(BaseModel):
     """Chat system"""
 
     gamemaster: GameMaster
     users: list[User]
 
 
-class Post(pydantic.BaseModel):
+class Post(BaseModel):
     """Post in a thread."""
 
     id: int
@@ -133,7 +130,7 @@ class Post(pydantic.BaseModel):
     in_reply_to: list[int] = []
 
 
-class Thread(pydantic.BaseModel):
+class Thread(BaseModel):
     """A discussion thread"""
 
     id: int
@@ -147,7 +144,7 @@ def load_users() -> list[User]:
     with p.open("r", encoding="utf8") as f:
         users = []
         for userdata in json.load(f):
-            agent = Agent(userdata["model"])
+            agent = Agent(model=TMP_MODEL)
             user = User(**userdata, agent=agent)
             users.append(user)
     return users
@@ -157,14 +154,16 @@ def load_gamemaster() -> GameMaster:
     """Load the game master from the JSON data file."""
     p = pathlib.Path("data/strategies.json")
     with p.open("r", encoding="utf8") as f:
-        agent = Agent("gpt-4-turbo-2024-04-09")  # hardcoded for now
-        gamemaster = GameMaster(**json.load(f), agent=agent)
+        agent = Agent(model=TMP_MODEL)  # hardcoded for now
+        userdata = json.load(f)[0]
+        gamemaster = GameMaster(**userdata, agent=agent)
     return gamemaster
 
 
 def select_user(system: System, thread: Thread) -> User:
     """Select a user posting next"""
     prompt = _get_user_selection_prompt(system=system, thread=thread)
+    logging.info("Selecting a user to post next")
     response = system.gamemaster.generate(prompt, prefix="User: ")
     if not response or not response.startswith("User: "):
         raise ValueError(f"LLM behaving weird: {response}")
@@ -173,6 +172,7 @@ def select_user(system: System, thread: Thread) -> User:
     for user in system.users:
         if user.character.lower() in r:
             selected = user
+            logging.info(f"Chosen user: {user.character}")
             break
     else:
         selected = random.choice(system.users)
@@ -185,6 +185,7 @@ def gen_post(user: User, thread: Thread) -> Post:
     """Generate a post for the user."""
     id_ = thread.posts[-1].id + 1 if thread.posts else 1
     prompt = _get_user_prompt(user, thread)
+    logging.info(f"Generating post for {user.character}")
     text = user.generate(prompt)
     if text is None:
         raise ValueError("Failed to generate text.")
@@ -293,6 +294,7 @@ def format_user(user: User) -> str:
 
 def init_thread(system: System, instruction: str) -> Thread:
     """Create a thread"""
+    logging.info("Creating a new thread")
     prompt = _get_thread_opening_prompt(instruction)
     text = system.gamemaster.generate(prompt)
     post = Post(id=1, username="OP", text=text)
@@ -302,6 +304,7 @@ def init_thread(system: System, instruction: str) -> Thread:
 
 def update_thread(system: System, thread: Thread) -> None:
     """Extend thread"""
+    logging.info("Updating the thread")
     user = select_user(system, thread)
     post = gen_post(user, thread)
     thread.posts.append(post)
@@ -321,3 +324,6 @@ def main() -> None:
 
     print(format_thread(thread))
 
+
+if __name__ == "__main__":
+    main()
