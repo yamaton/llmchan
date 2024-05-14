@@ -100,7 +100,7 @@ class User(BaseModel):
 
     def generate(self, prompt: str, prefix: str | None = None) -> str:
         """Get a LLM response"""
-        return self.agent.generate(prompt)
+        return self.agent.generate(prompt, prefix)
 
 
 class GameMaster(BaseModel):
