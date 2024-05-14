@@ -2,21 +2,16 @@
     {
         "id": 1,
         "name": "Smoothie",
-        "strategy": "Buy and Hold"
+        "strategy": "Select the most suitable user from the line of argument as well as users characteristics. Also give a chance to the user who has not spoken yet."
     },
     {
         "id": 2,
-        "name": "Topic Focused",
-        "strategy": "Buy and Hold"
+        "name": "Chaos",
+        "strategy": "Select a user such as to promote digression of the discussion."
     },
     {
         "id": 3,
-        "name": "Expand Horizon",
-        "strategy": "Buy and Hold"
-    },
-    {
-        "id": 4,
-        "name": "Dig deeper",
-        "strategy": "Buy and Hold"
+        "name": "Searcher",
+        "strategy": "Select a user such that the point of discussion drifts toward unexpected but insightful directions."
     }
 ]

@@ -155,7 +155,7 @@ def load_gamemaster() -> GameMaster:
     p = pathlib.Path("data/strategies.json")
     with p.open("r", encoding="utf8") as f:
         agent = Agent(model=TMP_MODEL)  # hardcoded for now
-        userdata = json.load(f)[0]
+        userdata = json.load(f)[1]  # [TODO] Hardcoded. Change later.
         gamemaster = GameMaster(**userdata, agent=agent)
     return gamemaster
 
@@ -163,6 +163,7 @@ def load_gamemaster() -> GameMaster:
 def select_user(system: System, thread: Thread) -> User:
     """Select a user posting next"""
     prompt = _get_user_selection_prompt(system=system, thread=thread)
+    logging.info(f"Prompt to select a user: {prompt}")
     logging.info("Selecting a user to post next")
     response = system.gamemaster.generate(prompt, prefix="User: ")
     if not response or not response.startswith("User: "):
@@ -185,32 +186,49 @@ def gen_post(user: User, thread: Thread) -> Post:
     """Generate a post for the user."""
     id_ = thread.posts[-1].id + 1 if thread.posts else 1
     prompt = _get_user_prompt(user, thread)
+    logging.info(f"Prompt for post generation: {prompt}")
     logging.info(f"Generating post for {user.character}")
     text = user.generate(prompt)
     if text is None:
         raise ValueError("Failed to generate text.")
-    return Post(id=id_, username=user.character, text=text)
+
+    in_reply_to = _extract_reply_to(text)
+    text = _clean_text(text)
+    return Post(id=id_, username=user.character, text=text, in_reply_to=in_reply_to)
+
+
+def _extract_reply_to(text: str) -> list[int]:
+    """Extract the reply-to post IDs from the text."""
+    if " -> " in text:
+        for line in text.split("\n"):
+            if " -> " in line:
+                reply_to_part = line.split(" -> ")[1].strip()[1:-1]
+                return [int(x) for x in reply_to_part.split(",")]
+    return []
+
+
+def _clean_text(text: str) -> str:
+    """Clean up the text"""
+    lines = text.split("\n")
+    return "\n".join(x for x in lines if x.strip() and (not x.startswith("[") and x.strip()))
 
 
 def _get_user_prompt(user: User, thread: Thread) -> str:
     """Generate a prompt for user content generation"""
-    s = f"""
+    s = f"""\
         ### Objective
 
-        Post a comment to this given discussion thread:
+        Post a single message to this given discussion thread:
 
         <thread>
-        {thread}
+        {textwrap.indent(format_thread(thread), " " * 8)}
         </thread>
 
-
-        ### Username and Role
-
-        username: {user.character}
-        role: {user.role}
+        ### Role
+        {textwrap.indent(user.role, " " * 8)}
 
         ### Thread format
-        The discussion is in the form of temporally-ordered messages. You may use "->" to indicate replies to one or more posts, but omit reply to the thread opener. In other words, never use `-> [1]`. Participants are anonymous and no usernames is displayed. Keep a comment 1 to 5 senstences long.
+        The discussion is in the form of temporally-ordered messages as follows. (`<example>` and `</example>` are not part of the message.) You may use "->" to indicate replies, but omit reply to the thread opener. In other words, never use `-> [1]`. Use the format ` -> [3,5]` to reply to multiple posts, but never reply to more than two.  Participants are anonymous and no usernames is displayed. Keep a comment 1 to 5 senstences long.
 
         <example>
         [1]
@@ -222,6 +240,14 @@ def _get_user_prompt(user: User, thread: Thread) -> str:
         [3] -> [2]
         I have never heard of Stardew Valley. Can I play it on my XBox? What is Steam btw?
         </example>
+
+        ### Message format
+        Your message should be in the following format. `<example>` and `</example>` are not part of the message.
+
+        <example>
+        [4] -> [3]
+        I'm not sure about XBox, but you can definitely play Stardew Valley on Steam. Steam is a digital distribution platform for video games.
+        </example>
     """
     return textwrap.dedent(s)
 
@@ -231,22 +257,23 @@ def _get_user_selection_prompt(system: System, thread: Thread) -> str:
     users_str = "\n\n".join(format_user(x) for x in system.users)
     thread_str = format_thread(thread)
 
-    s = f"""
+    s = f"""\
         You're given an ongoing discussion thread, and your task is to select a user who is going to post next to the thread.
-        {system.gamemaster.strategy}
+        Here is your stategy in choosing the next user:
+        {textwrap.indent(system.gamemaster.strategy, " " * 8)}
 
-        Here is the pool of usernames. Select one from the list, or just answer RANDOM if want to throw a dice.
+        Here is the pool of usernames from which you are to select. You may also answer RANDOM if casting a dice.
         <users>
-        {users_str}
+        {textwrap.indent(users_str, " " * 8)}
         </users>
-
 
         Here is the ongoing thread.
         <thread>
-        {thread_str}
+        {textwrap.indent(thread_str, " " * 8)}
         </thread>
 
-        From the discussion and nature of participants, Who would be the one posting next to this thread? Please answer using the format like this:
+        Based on these information, who would be the one posting next to this thread?
+        Please answer using the format like this:
 
         User: dont_use_this_sample
         """
@@ -255,7 +282,7 @@ def _get_user_selection_prompt(system: System, thread: Thread) -> str:
 
 def _get_thread_opening_prompt(instruction: str) -> str:
     """Generate an OP comment creating a thread"""
-    s = f"""
+    s = f"""\
         Create a short message to open a thread as Original Poster (OP). Here is the topic of the thread:
         {instruction}
 
@@ -283,7 +310,7 @@ def format_thread(thread: Thread) -> str:
 
 def format_user(user: User) -> str:
     """Format user for user-selection prompt"""
-    s = f"""
+    s = f"""\
         - **{user.character}**
             - **Role in Discussion:** {user.role}
     """
@@ -294,6 +321,7 @@ def init_thread(system: System, instruction: str) -> Thread:
     """Create a thread"""
     logging.info("Creating a new thread")
     prompt = _get_thread_opening_prompt(instruction)
+    logging.info(f"Prompt to start a thread: {prompt}")
     text = system.gamemaster.generate(prompt)
     post = Post(id=1, username="OP", text=text)
     thread = Thread(id=1, theme=instruction, posts=[post])
@@ -317,8 +345,16 @@ def main() -> None:
 
     instruction = "The topic is about recommendations on cheap and fun games on Steam."
     thread = init_thread(system, instruction)
+    print(">>>=============================")
+    print(format_thread(thread))
+    print("<<<=============================")
+
     for _ in range(5):
         update_thread(system, thread)
+        print(">>>---------------------------------------")
+        print(format_thread(thread))
+        print("<<<---------------------------------------")
+
 
     print(format_thread(thread))
 
