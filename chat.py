@@ -306,7 +306,7 @@ def _get_thread_opening_prompt(instruction: str) -> str:
     """Generate an OP comment creating a thread"""
     s = f"""\
         Create a short message to open a thread as Original Poster (OP). Here is the topic of the thread:
-        {instruction}
+        {textwrap.indent(instruction, " " * 8)}
 
         <example>
         Hey fellow patient gamers! I'm looking for some cheap and fun games on Steam that are worth the wait. Any recommendations?
@@ -353,10 +353,7 @@ def format_thread_user(thread: Thread, user: User) -> str:
 
 def format_user(user: User) -> str:
     """Format user for user-selection prompt"""
-    s = f"""\
-        - **{user.character}**
-            - **Role in Discussion:** {user.role}
-    """
+    s = f"""- **{user.character}**\n    - **Role in Discussion:** {user.role}"""
     return textwrap.dedent(s)
 
 
