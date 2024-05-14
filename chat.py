@@ -53,7 +53,7 @@ class Agent(BaseModel):
             messages=messages,
             model=self.model,
             max_tokens=1024,
-            temperature=0,
+            temperature=1.0,
         )
 
         res = chat_completion.choices[0].message.content
