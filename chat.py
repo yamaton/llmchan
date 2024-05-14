@@ -41,7 +41,7 @@ class Agent(BaseModel):
     """OpenAI LLM Agent"""
     model: Model = Field(TMP_MODEL, description="OpenAI LLM model name")
 
-    def generate(self, prompt: str, prefix: str | None = None) -> str:
+    def generate(self, prompt: str, prefill: str | None = None) -> str:
         """Generate a response based on the prompt."""
         client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -65,8 +65,12 @@ class AnthropicAgent(BaseModel):
     """Anthropic LLM agent"""
     model: Model = Field(TMP_MODEL, description="OpenAI LLM model name")
 
-    def generate(self, prompt: str, prefix: str | None = None) -> str:
-        """Generate a response based on the prompt."""
+    def generate(self, prompt: str, prefill: str | None = None) -> str:
+        """Generate a response based on the prompt.
+
+        prefill: https://docs.anthropic.com/en/docs/prefill-claudes-response
+
+        """
         client = Anthropic(api_key=ANTHROPIC_API_KEY)
         messages: list[AnthropicMessageParam] = [
             {
@@ -74,10 +78,10 @@ class AnthropicAgent(BaseModel):
                 "content": prompt,
             }
         ]
-        if prefix:
+        if prefill:
             response_message: AnthropicMessageParam = {
                 "role": "assistant",
-                "content": prefix,
+                "content": prefill,
             }
             messages.append(response_message)
 
@@ -98,9 +102,9 @@ class User(BaseModel):
     role: str
     agent: Agent
 
-    def generate(self, prompt: str, prefix: str | None = None) -> str:
+    def generate(self, prompt: str, prefill: str | None = None) -> str:
         """Get a LLM response"""
-        return self.agent.generate(prompt, prefix)
+        return self.agent.generate(prompt, prefill)
 
 
 class GameMaster(BaseModel):
@@ -109,9 +113,9 @@ class GameMaster(BaseModel):
     strategy: str
     agent: Agent
 
-    def generate(self, prompt: str, prefix: str | None = None) -> str:
+    def generate(self, prompt: str, prefill: str | None = None) -> str:
         """Get a LLM response"""
-        return self.agent.generate(prompt, prefix)
+        return self.agent.generate(prompt, prefill)
 
 
 class System(BaseModel):
@@ -165,7 +169,7 @@ def select_user(system: System, thread: Thread) -> User:
     prompt = _get_user_selection_prompt(system=system, thread=thread)
     logging.info(f"Prompt to select a user: {prompt}")
     logging.info("Selecting a user to post next")
-    response = system.gamemaster.generate(prompt, prefix="User: ")
+    response = system.gamemaster.generate(prompt, prefill="User: ")
     if not response or not response.startswith("User: "):
         raise ValueError(f"LLM behaving weird: {response}")
 
