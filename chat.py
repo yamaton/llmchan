@@ -39,6 +39,7 @@ TMP_MODEL = "gpt-4o-2024-05-13"
 
 class Agent(BaseModel):
     """OpenAI LLM Agent"""
+
     model: Model = Field(TMP_MODEL, description="OpenAI LLM model name")
 
     def generate(self, prompt: str, prefill: str | None = None) -> str:
@@ -63,6 +64,7 @@ class Agent(BaseModel):
 
 class AnthropicAgent(BaseModel):
     """Anthropic LLM agent"""
+
     model: Model = Field(TMP_MODEL, description="OpenAI LLM model name")
 
     def generate(self, prompt: str, prefill: str | None = None) -> str:
@@ -159,15 +161,17 @@ def load_gamemaster() -> GameMaster:
     p = pathlib.Path("data/strategies.json")
     with p.open("r", encoding="utf8") as f:
         agent = Agent(model=TMP_MODEL)  # hardcoded for now
-        userdata = json.load(f)[1]  # [TODO] Hardcoded. Change later.
-        gamemaster = GameMaster(**userdata, agent=agent)
+        strategies = json.load(f)
+
+    strategy = strategies[2]  # [TODO] Hardcoded. Change later.
+    gamemaster = GameMaster(**strategy, agent=agent)
     return gamemaster
 
 
 def select_user(system: System, thread: Thread) -> User:
     """Select a user posting next"""
     prompt = _get_user_selection_prompt(system=system, thread=thread)
-    logging.info(f"Prompt to select a user: {prompt}")
+    logging.debug(f"Prompt to select a user: {prompt}")
     logging.info("Selecting a user to post next")
     response = system.gamemaster.generate(prompt, prefill="User: ")
     if not response or not response.startswith("User: "):
@@ -190,7 +194,7 @@ def gen_post(user: User, thread: Thread) -> Post:
     """Generate a post for the user."""
     id_ = thread.posts[-1].id + 1 if thread.posts else 1
     prompt = _get_user_prompt(user, thread)
-    logging.info(f"Prompt for post generation: {prompt}")
+    logging.debug(f"Prompt for post generation: {prompt}")
     logging.info(f"Generating post for {user.character}")
     text = user.generate(prompt)
     if text is None:
@@ -214,7 +218,9 @@ def _extract_reply_to(text: str) -> list[int]:
 def _clean_text(text: str) -> str:
     """Clean up the text"""
     lines = text.split("\n")
-    return "\n".join(x for x in lines if x.strip() and (not x.startswith("[") and x.strip()))
+    return "\n".join(
+        x for x in lines if x.strip() and (not x.startswith("[") and x.strip())
+    )
 
 
 def _get_user_prompt(user: User, thread: Thread) -> str:
@@ -350,7 +356,7 @@ def init_thread(system: System, instruction: str) -> Thread:
     """Create a thread"""
     logging.info("Creating a new thread")
     prompt = _get_thread_opening_prompt(instruction)
-    logging.info(f"Prompt to start a thread: {prompt}")
+    logging.debug(f"Prompt to start a thread: {prompt}")
     text = system.gamemaster.generate(prompt)
     post = Post(id=1, username="OP", text=text)
     thread = Thread(id=1, theme=instruction, posts=[post])
@@ -374,9 +380,9 @@ def main() -> None:
 
     instruction = "The topic is about recommendations on cheap and fun games on Steam."
     thread = init_thread(system, instruction)
-    print(">>>=============================")
+    print(">>>---------------------------------------")
     print(format_thread(thread))
-    print("<<<=============================")
+    print("<<<---------------------------------------")
 
     for _ in range(5):
         update_thread(system, thread)
@@ -384,8 +390,9 @@ def main() -> None:
         print(format_thread(thread))
         print("<<<---------------------------------------")
 
-
+    print(">>>=======================================")
     print(format_thread(thread))
+    print("<<<=======================================")
 
 
 if __name__ == "__main__":
