@@ -42,7 +42,7 @@ class Agent(BaseModel):
 
     model: Model = Field(TMP_MODEL, description="OpenAI LLM model name")
 
-    def generate(self, prompt: str, prefill: str | None = None) -> str:
+    def generate(self, prompt: str, temperature: float, prefill: str | None = None) -> str:
         """Generate a response based on the prompt."""
         client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -53,7 +53,7 @@ class Agent(BaseModel):
             messages=messages,
             model=self.model,
             max_tokens=1024,
-            temperature=1.0,
+            temperature=temperature,
         )
 
         res = chat_completion.choices[0].message.content
@@ -67,7 +67,7 @@ class AnthropicAgent(BaseModel):
 
     model: Model = Field(TMP_MODEL, description="OpenAI LLM model name")
 
-    def generate(self, prompt: str, prefill: str | None = None) -> str:
+    def generate(self, prompt: str, temperature: float, prefill: str | None = None) -> str:
         """Generate a response based on the prompt.
 
         prefill: https://docs.anthropic.com/en/docs/prefill-claudes-response
@@ -92,7 +92,7 @@ class AnthropicAgent(BaseModel):
             messages=messages,
             model=self.model,
             max_tokens=1024,
-            temperature=0.0,
+            temperature=temperature,
         )
         return response.content[0].text
 
@@ -104,9 +104,9 @@ class User(BaseModel):
     role: str
     agent: Agent
 
-    def generate(self, prompt: str, prefill: str | None = None) -> str:
+    def generate(self, prompt: str, temperature: float = 1.0, prefill: str | None = None) -> str:
         """Get a LLM response"""
-        return self.agent.generate(prompt, prefill)
+        return self.agent.generate(prompt, temperature, prefill)
 
 
 class GameMaster(BaseModel):
@@ -115,9 +115,9 @@ class GameMaster(BaseModel):
     strategy: str
     agent: Agent
 
-    def generate(self, prompt: str, prefill: str | None = None) -> str:
+    def generate(self, prompt: str, temperature: float = 0.1, prefill: str | None = None) -> str:
         """Get a LLM response"""
-        return self.agent.generate(prompt, prefill)
+        return self.agent.generate(prompt, temperature, prefill)
 
 
 class System(BaseModel):
@@ -181,12 +181,15 @@ def select_user(system: System, thread: Thread) -> User:
     for user in system.users:
         if user.character.lower() in r:
             selected = user
-            logging.info(f"Chosen user: {user.character}")
             break
     else:
         selected = random.choice(system.users)
-        logging.info(f"Choosing random user: {user.character}")
+        if "random" in r:
+            logging.info(f"LLM response: {r}")
+        else:
+            logging.warning(f"[Fallback] LLM response: {r}")
 
+    logging.info(f"Chosen user: {selected.character}")
     return selected
 
 
