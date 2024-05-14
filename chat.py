@@ -210,7 +210,7 @@ def _get_user_prompt(user: User, thread: Thread) -> str:
         role: {user.role}
 
         ### Thread format
-        The discussion is in the form of temporally-ordered messages. You may use "->" in the first line to show reply explicitly to one or more posts. Participants are anonymous and no usernames is displayed. Keep a comment 1 to 5 senstences long.
+        The discussion is in the form of temporally-ordered messages. You may use "->" to indicate replies to one or more posts, but omit reply to the thread opener. In other words, never use `-> [1]`. Participants are anonymous and no usernames is displayed. Keep a comment 1 to 5 senstences long.
 
         <example>
         [1]
@@ -248,9 +248,7 @@ def _get_user_selection_prompt(system: System, thread: Thread) -> str:
 
         From the discussion and nature of participants, Who would be the one posting next to this thread? Please answer using the format like this:
 
-        <example>
         User: dont_use_this_sample
-        </example>
         """
     return textwrap.dedent(s)
 
