@@ -219,7 +219,12 @@ def _clean_text(text: str) -> str:
     """Clean up the text"""
     lines = text.split("\n")
     return "\n".join(
-        x for x in lines if x.strip() and (not x.startswith("[") and x.strip())
+        x for x in lines
+        if (x.strip() and
+             (not x.startswith("[")) and
+             (not x.startswith("<example>")) and
+             (not x.startswith("</example>"))
+        )
     )
 
 
