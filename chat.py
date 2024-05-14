@@ -34,7 +34,7 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", None)
 if ANTHROPIC_API_KEY is None:
     raise ValueError("Failed to get env $ANTHROPIC_API_KEY")
 
-TMP_MODEL = "gpt-4o-2024-05-13"
+TMP_MODEL: Model = "gpt-4o-2024-05-13"
 
 
 class Agent(BaseModel):
@@ -42,7 +42,9 @@ class Agent(BaseModel):
 
     model: Model = Field(TMP_MODEL, description="OpenAI LLM model name")
 
-    def generate(self, prompt: str, temperature: float, prefill: str | None = None) -> str:
+    def generate(
+        self, prompt: str, temperature: float, prefill: str | None = None
+    ) -> str:
         """Generate a response based on the prompt."""
         client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -67,7 +69,9 @@ class AnthropicAgent(BaseModel):
 
     model: Model = Field(TMP_MODEL, description="OpenAI LLM model name")
 
-    def generate(self, prompt: str, temperature: float, prefill: str | None = None) -> str:
+    def generate(
+        self, prompt: str, temperature: float, prefill: str | None = None
+    ) -> str:
         """Generate a response based on the prompt.
 
         prefill: https://docs.anthropic.com/en/docs/prefill-claudes-response
@@ -104,7 +108,9 @@ class User(BaseModel):
     role: str
     agent: Agent
 
-    def generate(self, prompt: str, temperature: float = 1.0, prefill: str | None = None) -> str:
+    def generate(
+        self, prompt: str, temperature: float = 1.0, prefill: str | None = None
+    ) -> str:
         """Get a LLM response"""
         return self.agent.generate(prompt, temperature, prefill)
 
@@ -115,7 +121,9 @@ class GameMaster(BaseModel):
     strategy: str
     agent: Agent
 
-    def generate(self, prompt: str, temperature: float = 0.1, prefill: str | None = None) -> str:
+    def generate(
+        self, prompt: str, temperature: float = 0.1, prefill: str | None = None
+    ) -> str:
         """Get a LLM response"""
         return self.agent.generate(prompt, temperature, prefill)
 
@@ -161,10 +169,10 @@ def load_gamemaster() -> GameMaster:
     p = pathlib.Path("data/strategies.json")
     with p.open("r", encoding="utf8") as f:
         agent = Agent(model=TMP_MODEL)  # hardcoded for now
-        strategies = json.load(f)
+        data_list = json.load(f)
 
-    strategy = strategies[2]  # [TODO] Hardcoded. Change later.
-    gamemaster = GameMaster(**strategy, agent=agent)
+    userdata = data_list[1]  # [TODO] Hardcoded. Change later.
+    gamemaster = GameMaster(**userdata, agent=agent)
     return gamemaster
 
 
@@ -222,11 +230,13 @@ def _clean_text(text: str) -> str:
     """Clean up the text"""
     lines = text.split("\n")
     return "\n".join(
-        x for x in lines
-        if (x.strip() and
-             (not x.startswith("[")) and
-             (not x.startswith("<example>")) and
-             (not x.startswith("</example>"))
+        x
+        for x in lines
+        if (
+            x.strip()
+            and (not x.startswith("["))
+            and (not x.startswith("<example>"))
+            and (not x.startswith("</example>"))
         )
     )
 
@@ -302,11 +312,16 @@ def _get_user_selection_prompt(system: System, thread: Thread) -> str:
     return textwrap.dedent(s)
 
 
-def _get_thread_opening_prompt(instruction: str) -> str:
+def _get_thread_opening_prompt(topic: str) -> str:
     """Generate an OP comment creating a thread"""
     s = f"""\
+        ### Objective
+
         Create a short message to open a thread as Original Poster (OP). Here is the topic of the thread:
-        {textwrap.indent(instruction, " " * 8)}
+        {textwrap.indent(topic, " " * 8)}
+
+        ### Message format
+        Your message should be in the following format. `<example>` and `</example>` are not part of the message.
 
         <example>
         Hey fellow patient gamers! I'm looking for some cheap and fun games on Steam that are worth the wait. Any recommendations?
@@ -357,14 +372,14 @@ def format_user(user: User) -> str:
     return textwrap.dedent(s)
 
 
-def init_thread(system: System, instruction: str) -> Thread:
+def init_thread(system: System, topic: str) -> Thread:
     """Create a thread"""
     logging.info("Creating a new thread")
-    prompt = _get_thread_opening_prompt(instruction)
+    prompt = _get_thread_opening_prompt(topic)
     logging.debug(f"Prompt to start a thread: {prompt}")
     text = system.gamemaster.generate(prompt)
     post = Post(id=1, username="OP", text=text)
-    thread = Thread(id=1, theme=instruction, posts=[post])
+    thread = Thread(id=1, theme=topic, posts=[post])
     return thread
 
 
@@ -383,8 +398,11 @@ def main() -> None:
     gamemaster = load_gamemaster()
     system = System(gamemaster=gamemaster, users=users)
 
-    instruction = "The topic is about recommendations on cheap and fun games on Steam."
-    thread = init_thread(system, instruction)
+    # topic = "Recommendations on fun and cheap games on Steam."
+    topic = (
+        "Tabby's Star, a mysterious star showing irregularly fluctuating luminosity."
+    )
+    thread = init_thread(system, topic)
     print(">>>---------------------------------------")
     print(format_thread(thread))
     print("<<<---------------------------------------")
