@@ -225,14 +225,18 @@ def _get_user_prompt(user: User, thread: Thread) -> str:
         Post a single message to this given discussion thread:
 
         <thread>
-        {textwrap.indent(format_thread(thread), " " * 8)}
+        {textwrap.indent(format_thread_user(thread, user), " " * 8)}
         </thread>
 
         ### Role
         {textwrap.indent(user.role, " " * 8)}
 
         ### Thread format
-        The discussion is in the form of temporally-ordered messages as follows. (`<example>` and `</example>` are not part of the message.) You may use "->" to indicate replies, but omit reply to the thread opener. In other words, never use `-> [1]`. Use the format ` -> [3,5]` to reply to multiple posts, but never reply to more than two.  Participants are anonymous and no usernames is displayed. Keep a comment 1 to 5 senstences long.
+
+        * Participants are anonymous and no usernames is displayed, but your own posts are marked with an asterisk `(*)`.
+        * You may use "->" to indicate replies, but omit reply to the thread opener. In other words, never use `-> [1]`. Use the format ` -> [3,5]` to reply to multiple posts, but never reply to more than two.
+        * Keep a comment 1 to 5 senstences long.
+        * The discussion is in the form of temporally-ordered messages as follows. (`<example>` and `</example>` are not part of the message.)
 
         <example>
         [1]
@@ -297,19 +301,40 @@ def _get_thread_opening_prompt(instruction: str) -> str:
     return textwrap.dedent(s)
 
 
-def format_post(post: Post) -> str:
+def format_post(post: Post, user: User) -> str:
+    """Format the post as a string for the `user`."""
+    mypost = "(*) " if post.username == user.character else ""
+
+    if post.in_reply_to:
+        numbers = ",".join(str(i) for i in post.in_reply_to)
+        reply = f" -> [{numbers}]"
+    else:
+        reply = ""
+    return f"{mypost}[{post.id}]{reply}\n{post.text}"
+
+
+def format_post_with_username(post: Post) -> str:
     """Format the post as a string."""
     if post.in_reply_to:
         numbers = ",".join(str(i) for i in post.in_reply_to)
         reply = f" -> [{numbers}]"
     else:
         reply = ""
-    return f"[{post.id}]{reply}\n{post.text}"
+    return f"[{post.id}] {post.username}{reply}\n{post.text}"
 
 
 def format_thread(thread: Thread) -> str:
-    """Format the thread as a string."""
-    return "\n\n".join(format_post(post) for post in thread.posts)
+    """Format the thread as a string. Includes usernames."""
+    return "\n\n".join(format_post_with_username(post) for post in thread.posts)
+
+
+def format_thread_user(thread: Thread, user: User) -> str:
+    """Format the thread as a string for the `user` to read.
+
+    - The user's own posts are marked with an asterisk.
+    - Usernames are not displayed.
+    """
+    return "\n\n".join(format_post(post, user) for post in thread.posts)
 
 
 def format_user(user: User) -> str:
