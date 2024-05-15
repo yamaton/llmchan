@@ -238,7 +238,7 @@ def _clean_text(text: str) -> str:
             and (not x.startswith("</example>"))
             and (not x.startswith("(*)"))
         )
-    )
+    ).strip()
 
 
 def _get_user_prompt(user: User, thread: Thread) -> str:
