@@ -400,9 +400,23 @@ def main() -> None:
     system = System(gamemaster=gamemaster, users=users)
 
     # topic = "Recommendations on fun and cheap games on Steam."
-    topic = (
-        "Tabby's Star, a mysterious star showing irregularly fluctuating luminosity."
-    )
+    # topic = "Tabby's Star, a mysterious star showing irregularly fluctuating luminosity."
+    # topic = "Why does American government keep sending huge chunk of money to Israel?"
+    # topic = "Alternatives to Nvidia's CUDA in AI computation."
+    # topic = "Issues in American political campaign financing, and how to fix it."
+    # topic = "How does nature maintain biodiversity by overcoming the competitive exclusion principle?"
+    # topic = "How does the current AI hype end up in a bubble burst? Or, does it?"
+    # topic = "What happened to the Metaverse and VR/AR hype in the recent years?"
+    # topic = "源氏物語の宇治十帖について日本語で語り合いましょう。"
+    topic = "How can we understand that 1 + 2 + 3 + ... = -1/12?"
+    # topic = textwrap.dedent("""
+    # Suppose that $a$, $b$, $c$, $d$ are positive real numbers satisfying $(a + c)(b + d) = ac + bd$.
+    # Find the smallest possible value of
+    # $$
+    # \frac{a}{b} + \frac{b}{c} + \frac{c}{d} + \frac{d}{a}.
+    # $$
+    # """).strip()
+
     thread = init_thread(system, topic)
     print(">>>---------------------------------------")
     print(format_thread(thread))
