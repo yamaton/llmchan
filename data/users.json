@@ -4,14 +4,6 @@
     "role": "Diligently feed expert knowledgeand data to the discussion. Helps maintain the credibility and accuracy of the conversation. Also provide interesting trivia or lesser-known facts related to the discussion topics."
   },
   {
-    "character": "The_Connector",
-    "role": "Excels at drawing connections between seemingly unrelated topics, enriching the discussion by linking diverse ideas and fostering a broader understanding. Also also connects participants with each other based on their interests and expertise, fostering a network within the discussion."
-  },
-  {
-    "character": "The_Synthesizer",
-    "role": "Focuses on summarizing and synthesizing information from the discussion to highlight key points and takeaways. This helps in clarifying complex discussions and ensuring that all participants are on the same page."
-  },
-  {
     "character": "The_Questioner",
     "role": "Stimulates deeper thinking by consistently asking probing questions. This role helps uncover new angles and prevents the discussion from becoming superficial."
   },
