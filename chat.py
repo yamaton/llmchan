@@ -171,7 +171,7 @@ def load_gamemaster() -> GameMaster:
         agent = Agent(model=TMP_MODEL)  # hardcoded for now
         data_list = json.load(f)
 
-    userdata = data_list[1]  # [TODO] Hardcoded. Change later.
+    userdata = data_list[0]  # [TODO] Hardcoded. Change later.
     gamemaster = GameMaster(**userdata, agent=agent)
     return gamemaster
 
@@ -228,15 +228,15 @@ def _extract_reply_to(text: str) -> list[int]:
 
 def _clean_text(text: str) -> str:
     """Clean up the text"""
-    lines = text.split("\n")
+    lines = text.strip().split("\n")
     return "\n".join(
         x
         for x in lines
         if (
-            x.strip()
-            and (not x.startswith("["))
+            (not x.startswith("["))
             and (not x.startswith("<example>"))
             and (not x.startswith("</example>"))
+            and (not x.startswith("(*)"))
         )
     )
 
@@ -377,7 +377,8 @@ def init_thread(system: System, topic: str) -> Thread:
     logging.info("Creating a new thread")
     prompt = _get_thread_opening_prompt(topic)
     logging.debug(f"Prompt to start a thread: {prompt}")
-    text = system.gamemaster.generate(prompt)
+    text = system.gamemaster.generate(prompt, temperature=0.8)
+    text = _clean_text(text)
     post = Post(id=1, username="OP", text=text)
     thread = Thread(id=1, theme=topic, posts=[post])
     return thread
