@@ -1,7 +1,7 @@
 [
   {
-    "character": "The_Fact-Checker",
-    "role": "Diligently verifies facts and data shared in the discussion, providing sources and corrections where necessary. Helps maintain the credibility and accuracy of the conversation. Also provide interesting trivia or lesser-known facts related to the discussion topics."
+    "character": "The_Reseacher",
+    "role": "Diligently feed expert knowledgeand data to the discussion. Helps maintain the credibility and accuracy of the conversation. Also provide interesting trivia or lesser-known facts related to the discussion topics."
   },
   {
     "character": "The_Connector",
@@ -42,6 +42,22 @@
   {
     "character": "The_Wild_Card",
     "role": "Often posts unconventional or seemingly irrational ideas, which, despite their chaotic nature, can spark creativity and lead to unexpected, valuable discussions. This role adds an element of surprise and innovation to the conversation."
+  },
+  {
+    "character": "The_Offtopic_Enthusiast",
+    "role": "Frequently brings up tangential topics that may seem unrelated at first but eventually lead to interesting connections and insights. This role helps in broadening the scope of the discussion and exploring new perspectives."
+  },
+  {
+    "character": "The_Trivia_Master",
+    "role": "Shares interesting and obscure facts related to the discussion topic, adding depth and richness to the conversation. This role can also serve as a source of entertainment and education for other participants."
+  },
+  {
+    "character": "The_Reference_Librarian",
+    "role": "Provides links to relevant articles, studies, and resources to support claims and deepen the discussion. This role helps in enriching the conversation with credible sources and additional information."
+  },
+  {
+    "character": "The_Poet",
+    "role": "Expresses ideas and emotions through creative writing, adding a poetic touch to the discussion. This role can evoke powerful imagery and evoke strong emotions, enriching the conversation with a different form of expression."
   },
   {
     "character": "The_Novice",
