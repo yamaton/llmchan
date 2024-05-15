@@ -8,8 +8,9 @@ import logging
 import os
 import pathlib
 import random
+import re
 import textwrap
-from typing import Literal
+from typing import Literal, Tuple
 
 from pydantic import BaseModel, Field
 from openai import OpenAI
@@ -148,7 +149,7 @@ class Thread(BaseModel):
     """A discussion thread"""
 
     id: int
-    theme: str
+    topic: str
     posts: list[Post]
 
 
@@ -372,6 +373,43 @@ def format_user(user: User) -> str:
     return textwrap.dedent(s)
 
 
+def _parse_thread_header(line: str) -> Tuple[int, str, list[int]]:
+    """Parse the thread header line, and extract
+    - thread ID
+    - username
+    - reply-to post IDs
+
+    Example:
+    [0] OP -> [1,2]
+    """
+    parts = line.split(" -> ")
+    chunk = parts[0]
+    id_and_username = chunk.split("]")
+    id_ = int(id_and_username[0][1:])
+    username = id_and_username[1].strip()
+    reply_to = []
+    if len(parts) > 1:
+        xs = parts[1].strip()[1:-1].split(",")
+        reply_to = [int(x) for x in xs]
+    return id_, username, reply_to
+
+
+def _parse_single_post(text: str) -> Post:
+    """Parse a single post."""
+    lines = text.strip().split("\n")
+    id_, username, reply_to = _parse_thread_header(lines[0])
+    text = "\n".join(lines[1:])
+    return Post(id=id_, username=username, text=text, in_reply_to=reply_to)
+
+
+def load_thread(text: str) -> Thread:
+    """Load a thread by parsing the text."""
+    patt = re.compile("\n\n(?=\\[)")
+    chunks = patt.split(text.strip())
+    posts = [_parse_single_post(chunk) for chunk in chunks]
+    return Thread(id=0, topic="", posts=posts)
+
+
 def init_thread(system: System, topic: str) -> Thread:
     """Create a thread"""
     logging.info("Creating a new thread")
@@ -380,7 +418,7 @@ def init_thread(system: System, topic: str) -> Thread:
     text = system.gamemaster.generate(prompt, temperature=0.8)
     text = _clean_text(text)
     post = Post(id=0, username="OP", text=text)
-    thread = Thread(id=0, theme=topic, posts=[post])
+    thread = Thread(id=0, topic=topic, posts=[post])
     return thread
 
 
