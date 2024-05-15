@@ -258,18 +258,18 @@ def _get_user_prompt(user: User, thread: Thread) -> str:
         ### Thread format
 
         * Participants are anonymous and no usernames is displayed, but your own posts are marked with an asterisk `(*)`.
-        * You may use "->" to indicate replies, but omit reply to the thread opener. In other words, never use `-> [1]`. Use the format ` -> [3,5]` to reply to multiple posts, but never reply to more than two.
+        * You may use "->" to indicate replies, but omit reply to the thread opener. In other words, never use `-> [0]`. Use the format ` -> [3,5]` to reply to multiple posts, but never reply to more than two.
         * Keep a comment 1 to 5 senstences long.
         * The discussion is in the form of temporally-ordered messages as follows. (`<example>` and `</example>` are not part of the message.)
 
         <example>
-        [1]
+        [0]
         Hey fellow patient gamers! I'm looking for some cheap and fun games on Steam that are worth the wait. Any recommendations?
 
-        [2]
+        [1]
         Stardew Valley is a must-play! It's a charming farming RPG with tons of content and replayability. Plus, it's often on sale for under $10.
 
-        [3] -> [2]
+        [2] -> [1]
         I have never heard of Stardew Valley. Can I play it on my XBox? What is Steam btw?
         </example>
 
@@ -277,7 +277,7 @@ def _get_user_prompt(user: User, thread: Thread) -> str:
         Your message should be in the following format. `<example>` and `</example>` are not part of the message.
 
         <example>
-        [4] -> [3]
+        [3] -> [2]
         I'm not sure about XBox, but you can definitely play Stardew Valley on Steam. Steam is a digital distribution platform for video games.
         </example>
     """
@@ -379,8 +379,8 @@ def init_thread(system: System, topic: str) -> Thread:
     logging.debug(f"Prompt to start a thread: {prompt}")
     text = system.gamemaster.generate(prompt, temperature=0.8)
     text = _clean_text(text)
-    post = Post(id=1, username="OP", text=text)
-    thread = Thread(id=1, theme=topic, posts=[post])
+    post = Post(id=0, username="OP", text=text)
+    thread = Thread(id=0, theme=topic, posts=[post])
     return thread
 
 
