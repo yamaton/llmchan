@@ -193,7 +193,7 @@ def select_user(system: System, thread: Thread) -> User:
     else:
         selected = random.choice(system.users)
         if "random" in r:
-            logging.info(f"LLM response: {r}")
+            logging.info(f"LLM response: {response}")
         else:
             logging.warning(f"[Fallback] LLM response: {r}")
 
