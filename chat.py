@@ -8,6 +8,7 @@ import logging
 import os
 import random
 import re
+import readline
 import textwrap
 from pathlib import Path
 from typing import Literal, Tuple
@@ -479,6 +480,12 @@ def update_thread(system: System, thread: Thread) -> None:
     thread.posts.append(post)
 
 
+def update_thread_batch(system: System, thread: Thread, n: int) -> None:
+    """Extend thread with multiple posts"""
+    for _ in range(n):
+        update_thread(system, thread)
+
+
 def save_thread(path: Path, thread: Thread) -> None:
     """Save a thread to a file."""
     with path.open("w", encoding="utf8") as f:
@@ -492,6 +499,27 @@ def load_thread(path: Path, id_: int = 0, topic: str = "") -> Thread:
     return parse_as_thread(text, id_, topic)
 
 
+def add_message(thread: Thread, message) -> None:
+    """Post a message from a user to the thread"""
+    post = Post(id=thread.posts[-1].id + 1, username="Ready_Player_One", text=message)
+    thread.posts.append(post)
+
+
+def intervene(thread: Thread) -> None:
+    """Intervene in the thread"""
+    print("Want to post your message? (Y/n): ", end="")
+    ans = input()
+    if ans.strip().lower().startswith("n"):
+        return
+
+    print("Enter your message\n>>>")
+    message = input()
+    if not message.strip():
+        logging.warning("Empty message. Skipping...")
+        return
+    add_message(thread, message)
+
+
 def main() -> None:
     """Main function"""
     logging.basicConfig(level=logging.INFO)
@@ -501,15 +529,15 @@ def main() -> None:
 
     # topic = "Recommendations on fun and cheap games on Steam."
     # topic = "Tabby's Star, a mysterious star showing irregularly fluctuating luminosity."
-    # topic = "Why does American government keep sending huge chunk of money to Israel?"
     # topic = "Alternatives to Nvidia's CUDA in AI computation."
     # topic = "Issues in American political campaign financing, and how to fix it."
     # topic = "How does nature maintain biodiversity by overcoming the competitive exclusion principle?"
     # topic = "How does the current AI hype end up in a bubble burst? Or, does it?"
     # topic = "What happened to the Metaverse and VR/AR hype in the recent years?"
     # topic = "源氏物語の宇治十帖について日本語で語り合いましょう。"
-    topic = "マイナーだけど最高に面白いマンガについて語ろう。"
+    # topic = "マイナーだけど最高に面白いマンガについて語ろう。"
     # topic = "How can we understand that 1 + 2 + 3 + ... = -1/12?"
+    topic = "What should aging societies like Japan and China do to maintain their economy?"
     # topic = textwrap.dedent("""
     # Suppose that $a$, $b$, $c$, $d$ are positive real numbers satisfying $(a + c)(b + d) = ac + bd$.
     # Find the smallest possible value of
@@ -523,18 +551,19 @@ def main() -> None:
     print(format_thread(thread))
     print("<<<---------------------------------------")
 
-    for _ in range(5):
-        update_thread(system, thread)
+    for _ in range(4):
+        intervene(thread)
+        update_thread_batch(system, thread, 3)
         print(">>>---------------------------------------")
         print(format_thread(thread))
         print("<<<---------------------------------------")
 
+        p = Path("test-thread.txt")
+        save_thread(p, thread)
+
     print(">>>=======================================")
     print(format_thread(thread))
     print("<<<=======================================")
-
-    p = Path("test-thread.txt")
-    save_thread(p, thread)
 
 
 if __name__ == "__main__":
