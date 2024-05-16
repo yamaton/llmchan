@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "llmchat"
+name = "llmchan"
 version = "0.1.0"
 description = "Let LLM agents discuss with each other"
 authors = [{ name = "Yamato Matsuoka", email = "yamato.matsuoka@tritonlab.io" }]
@@ -22,4 +22,4 @@ dependencies = ["pydantic", "openai", "python-dotenv", "anthropic"]
 optional-dependencies.dev = ["pytest", "mypy", "pylint", "black"]
 
 [project.urls]
-repository = "https://github.com/yamaton/llmchat"
+repository = "https://github.com/yamaton/llmchan"
