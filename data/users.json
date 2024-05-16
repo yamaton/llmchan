@@ -24,10 +24,6 @@
     "role": "Identifies and discusses emerging trends related to the topic at hand. This role can help in forecasting future directions and implications, keeping the discussion forward-looking and dynamic."
   },
   {
-    "character": "The_Innovator",
-    "role": "Frequently introduces new technologies, methodologies, or ideas to the forum, sparking discussions on future trends and possibilities."
-  },
-  {
     "character": "The_Jester",
     "role": "Lightens the mood of intense discussions by injecting humor and wit. This role helps to ease tensions and maintain a friendly atmosphere, making the forum more welcoming and enjoyable."
   },
