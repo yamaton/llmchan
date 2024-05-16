@@ -2,13 +2,12 @@
 Chat handler
 
 """
-
+import curses
 import json
 import logging
 import os
 import random
 import re
-import readline
 import textwrap
 from pathlib import Path
 from typing import Literal, Tuple
@@ -507,20 +506,17 @@ def add_message(thread: Thread, message) -> None:
 
 def intervene(thread: Thread) -> None:
     """Intervene in the thread"""
-    print("Want to post your message? (Y/n): ", end="")
-    ans = input()
+    ans = input("Want to post your message? (Y/n): ")
     if ans.strip().lower().startswith("n"):
         return
-
-    print("Enter your message\n>>>")
-    message = input()
+    message = input("Enter your message\n")
     if not message.strip():
         logging.warning("Empty message. Skipping...")
         return
     add_message(thread, message)
 
 
-def main() -> None:
+def main(stdscr) -> None:
     """Main function"""
     # topic = "Recommendations on fun and cheap games on Steam."
     # topic = "Tabby's Star, a mysterious star showing irregularly fluctuating luminosity."
@@ -531,8 +527,8 @@ def main() -> None:
     # topic = "What happened to the Metaverse and VR/AR hype in the recent years?"
     # topic = "源氏物語の宇治十帖について日本語で語り合いましょう。"
     # topic = "マイナーだけど最高に面白いマンガについて語ろう。"
-    topic = "How can we understand that 1 + 2 + 3 + ... = -1/12?"
     # topic = "What should aging societies like Japan and China do to maintain their economy?"
+    topic = "How can we understand that 1 + 2 + 3 + ... = -1/12?"
     # topic = textwrap.dedent("""
     # Suppose that $a$, $b$, $c$, $d$ are positive real numbers satisfying $(a + c)(b + d) = ac + bd$.
     # Find the smallest possible value of
@@ -546,24 +542,35 @@ def main() -> None:
 
     system = System(gamemaster=load_gamemaster(), users=load_users())
     thread = init_thread(system, topic)
-    print(">>>---------------------------------------")
-    print(format_thread(thread))
-    print("<<<---------------------------------------")
 
     for _ in range(4):
-        intervene(thread)
-        update_thread_batch(system, thread, 3)
-        print(">>>---------------------------------------")
-        print(format_thread(thread))
-        print("<<<---------------------------------------")
+        stdscr.clear()
+        stdscr.addstr(format_thread(thread))
+        stdscr.refresh()
 
+        stdscr.addstr("\n\n\n---> Want to post your message? (Y/n): ")
+        ans = stdscr.getkey()
+        if ans.lower() != 'n':
+            stdscr.addstr("\n\nEnter your message\n")
+            curses.echo()
+            message = stdscr.getstr().decode('utf-8').strip()
+            curses.noecho()
+            if message:
+                add_message(thread, message)
+            else:
+                logging.warning("Empty message. Skipping...")
+        stdscr.addstr("\n\n ... waiting for response ...")
+        stdscr.refresh()
+
+        update_thread_batch(system, thread, 3)
         p = Path("test-thread.txt")
         save_thread(p, thread)
 
-    print(">>>=======================================")
-    print(format_thread(thread))
-    print("<<<=======================================")
-
+    stdscr.clear()
+    stdscr.addstr(format_thread(thread))
+    stdscr.refresh()
+    stdscr.addstr("\nPress any key to exit...")
+    stdscr.getch()
 
 if __name__ == "__main__":
-    main()
+    curses.wrapper(main)
