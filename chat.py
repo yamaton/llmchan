@@ -6,10 +6,10 @@ Chat handler
 import json
 import logging
 import os
-import pathlib
 import random
 import re
 import textwrap
+from pathlib import Path
 from typing import Literal, Tuple
 
 from pydantic import BaseModel, Field
@@ -155,7 +155,7 @@ class Thread(BaseModel):
 
 def load_users() -> list[User]:
     """Load users from the JSON data file."""
-    p = pathlib.Path("data/users.json")
+    p = Path("data/users.json")
     with p.open("r", encoding="utf8") as f:
         users = []
         for userdata in json.load(f):
@@ -167,7 +167,7 @@ def load_users() -> list[User]:
 
 def load_gamemaster() -> GameMaster:
     """Load the game master from the JSON data file."""
-    p = pathlib.Path("data/strategies.json")
+    p = Path("data/strategies.json")
     with p.open("r", encoding="utf8") as f:
         agent = Agent(model=TMP_MODEL)  # hardcoded for now
         data_list = json.load(f)
@@ -402,12 +402,12 @@ def _parse_single_post(text: str) -> Post:
     return Post(id=id_, username=username, text=text, in_reply_to=reply_to)
 
 
-def load_thread(text: str) -> Thread:
+def parse_as_thread(text: str, id_: int, topic: str) -> Thread:
     """Load a thread by parsing the text."""
     patt = re.compile("\n\n(?=\\[)")
     chunks = patt.split(text.strip())
     posts = [_parse_single_post(chunk) for chunk in chunks]
-    return Thread(id=0, topic="", posts=posts)
+    return Thread(id=id_, topic=topic, posts=posts)
 
 
 def init_thread(system: System, topic: str) -> Thread:
@@ -428,6 +428,19 @@ def update_thread(system: System, thread: Thread) -> None:
     user = select_user(system, thread)
     post = gen_post(user, thread)
     thread.posts.append(post)
+
+
+def save_thread(path: Path, thread: Thread) -> None:
+    """Save a thread to a file."""
+    with path.open("w", encoding="utf8") as f:
+        f.write(format_thread(thread))
+
+
+def load_thread(path: Path, id_: int = 0, topic: str = "") -> Thread:
+    """Load a thread from a file."""
+    with path.open("r", encoding="utf8") as f:
+        text = f.read()
+    return parse_as_thread(text, id_, topic)
 
 
 def main() -> None:
@@ -469,6 +482,9 @@ def main() -> None:
     print(">>>=======================================")
     print(format_thread(thread))
     print("<<<=======================================")
+
+    p = Path("test-thread.txt")
+    save_thread(p, thread)
 
 
 if __name__ == "__main__":
