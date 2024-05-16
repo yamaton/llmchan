@@ -44,12 +44,18 @@ class Agent(BaseModel):
     model: Model = Field(TMP_MODEL, description="OpenAI LLM model name")
 
     def generate(
-        self, prompt: str, temperature: float, prefill: str | None = None
+        self,
+        prompt: str,
+        temperature: float,
+        system_prompt: str,
+        prefill: str | None = None,
     ) -> str:
         """Generate a response based on the prompt."""
         client = OpenAI(api_key=OPENAI_API_KEY)
 
         messages: list[OpenAIMessageParam] = [{"role": "user", "content": prompt}]
+        if system_prompt:
+            messages.insert(0, {"role": "system", "content": system_prompt})
         logging.info("[LLM] Generating response from OpenAI LLM")
 
         chat_completion = client.chat.completions.create(
@@ -71,7 +77,11 @@ class AnthropicAgent(BaseModel):
     model: Model = Field(TMP_MODEL, description="OpenAI LLM model name")
 
     def generate(
-        self, prompt: str, temperature: float, prefill: str | None = None
+        self,
+        prompt: str,
+        temperature: float,
+        system_prompt: str,
+        prefill: str | None = None,
     ) -> str:
         """Generate a response based on the prompt.
 
@@ -93,12 +103,16 @@ class AnthropicAgent(BaseModel):
             messages.append(response_message)
 
         logging.info("[LLM] Generating response from Anthropic LLM")
-        response: AnthropicMessage = client.messages.create(
-            messages=messages,
-            model=self.model,
-            max_tokens=1024,
-            temperature=temperature,
-        )
+        kwargs = {
+            "messages": messages,
+            "model": self.model,
+            "max_tokens": 1024,
+            "temperature": temperature,
+        }
+        if system_prompt:
+            kwargs["system"] = system_prompt
+
+        response: AnthropicMessage = client.messages.create(**kwargs)
         return response.content[0].text
 
 
@@ -110,10 +124,16 @@ class User(BaseModel):
     agent: Agent
 
     def generate(
-        self, prompt: str, temperature: float = 1.0, prefill: str | None = None
+        self,
+        prompt: str,
+        temperature: float = 1.0,
+        system_prompt: str = "",
+        prefill: str | None = None,
     ) -> str:
         """Get a LLM response"""
-        return self.agent.generate(prompt, temperature, prefill)
+        return self.agent.generate(
+            prompt, temperature, system_prompt=system_prompt, prefill=prefill
+        )
 
 
 class GameMaster(BaseModel):
@@ -123,10 +143,16 @@ class GameMaster(BaseModel):
     agent: Agent
 
     def generate(
-        self, prompt: str, temperature: float = 0.1, prefill: str | None = None
+        self,
+        prompt: str,
+        temperature: float = 0.1,
+        system_prompt: str = "",
+        prefill: str | None = None,
     ) -> str:
         """Get a LLM response"""
-        return self.agent.generate(prompt, temperature, prefill)
+        return self.agent.generate(
+            prompt, temperature, system_prompt=system_prompt, prefill=prefill
+        )
 
 
 class System(BaseModel):
