@@ -38,6 +38,25 @@ if ANTHROPIC_API_KEY is None:
 TMP_MODEL: Model = "gpt-4o-2024-05-13"
 
 
+# [TODO] Move to a separate file
+# For multi-lingual support
+USE_JAPANESE = "Use Japanese language only; 日本語で答えてください。"
+USE_SPANISH = "Use Spanish language only; Responde en español, por favor."
+USE_RUSSIAN = "Use Russian language only; Ответьте на русском языке, пожалуйста."
+USE_FRENCH = "Use French language only; Répondez en français, s'il vous plaît."
+USE_GERMAN = "Use German language only; Bitte antworten Sie auf Deutsch."
+USE_ITALIAN = "Use Italian language only; Rispondi in italiano, per favore."
+USE_PORTUGUESE = "Use Portuguese language only; Responda em português, por favor."
+USE_KOREAN = "Use Korean language only; 한국어로 답변해주세요."
+USE_CHINESE = "Use Chinese language only; 请用中文回答。"
+USE_ARABIC = "Use Arabic language only; أجب باللغة العربية من فضلك."
+USE_HINDI = "Use Hindi language only; कृपया हिंदी में जवाब दें।"
+USE_TURKISH = "Use Turkish language only; Lütfen Türkçe cevap verin."
+USE_VIETNAMESE = "Use Vietnamese language only; Trả lời bằng tiếng Việt, xin cảm ơn."
+USE_THAI = "Use Thai language only; โปรดตอบด้วยภาษาไทย"
+USE_INDONESIAN = "Use Indonesian language only; Tolong jawab dalam bahasa Indonesia."
+
+
 class Agent(BaseModel):
     """OpenAI LLM Agent"""
 
@@ -234,7 +253,9 @@ def gen_post(user: User, thread: Thread) -> Post:
     prompt = _get_user_prompt(user, thread)
     logging.debug(f"Prompt for post generation: {prompt}")
     logging.info(f"Generating post for {user.character}")
-    text = user.generate(prompt)
+    text = user.generate(prompt, temperature=0.9)
+    # [TODO] Switch to Japanese
+    # text = user.generate(prompt, temperature=0.9, system_prompt=USE_JAPANESE)
     if text is None:
         raise ValueError("Failed to generate text.")
 
@@ -441,7 +462,9 @@ def init_thread(system: System, topic: str) -> Thread:
     logging.info("Creating a new thread")
     prompt = _get_thread_opening_prompt(topic)
     logging.debug(f"Prompt to start a thread: {prompt}")
-    text = system.gamemaster.generate(prompt, temperature=0.8)
+    text = system.gamemaster.generate(prompt, temperature=0.9)
+    # [TODO] Switch to Japanese
+    # text = system.gamemaster.generate(prompt, temperature=0.9, system_prompt=USE_JAPANESE)
     text = _clean_text(text)
     post = Post(id=0, username="OP", text=text)
     thread = Thread(id=0, topic=topic, posts=[post])
@@ -485,7 +508,8 @@ def main() -> None:
     # topic = "How does the current AI hype end up in a bubble burst? Or, does it?"
     # topic = "What happened to the Metaverse and VR/AR hype in the recent years?"
     # topic = "源氏物語の宇治十帖について日本語で語り合いましょう。"
-    topic = "How can we understand that 1 + 2 + 3 + ... = -1/12?"
+    topic = "マイナーだけど最高に面白いマンガについて語ろう。"
+    # topic = "How can we understand that 1 + 2 + 3 + ... = -1/12?"
     # topic = textwrap.dedent("""
     # Suppose that $a$, $b$, $c$, $d$ are positive real numbers satisfying $(a + c)(b + d) = ac + bd$.
     # Find the smallest possible value of
