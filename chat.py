@@ -522,11 +522,6 @@ def intervene(thread: Thread) -> None:
 
 def main() -> None:
     """Main function"""
-    logging.basicConfig(level=logging.INFO)
-    users = load_users()
-    gamemaster = load_gamemaster()
-    system = System(gamemaster=gamemaster, users=users)
-
     # topic = "Recommendations on fun and cheap games on Steam."
     # topic = "Tabby's Star, a mysterious star showing irregularly fluctuating luminosity."
     # topic = "Alternatives to Nvidia's CUDA in AI computation."
@@ -536,8 +531,8 @@ def main() -> None:
     # topic = "What happened to the Metaverse and VR/AR hype in the recent years?"
     # topic = "源氏物語の宇治十帖について日本語で語り合いましょう。"
     # topic = "マイナーだけど最高に面白いマンガについて語ろう。"
-    # topic = "How can we understand that 1 + 2 + 3 + ... = -1/12?"
-    topic = "What should aging societies like Japan and China do to maintain their economy?"
+    topic = "How can we understand that 1 + 2 + 3 + ... = -1/12?"
+    # topic = "What should aging societies like Japan and China do to maintain their economy?"
     # topic = textwrap.dedent("""
     # Suppose that $a$, $b$, $c$, $d$ are positive real numbers satisfying $(a + c)(b + d) = ac + bd$.
     # Find the smallest possible value of
@@ -546,6 +541,10 @@ def main() -> None:
     # $$
     # """).strip()
 
+    log_handler = logging.FileHandler(f"{topic[:30]}.log")
+    logging.basicConfig(level=logging.INFO, handlers=[log_handler])
+
+    system = System(gamemaster=load_gamemaster(), users=load_users())
     thread = init_thread(system, topic)
     print(">>>---------------------------------------")
     print(format_thread(thread))
