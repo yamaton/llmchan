@@ -2,8 +2,6 @@
 Chat handler
 
 """
-import curses
-import curses.textpad
 import json
 import logging
 import os
@@ -13,6 +11,7 @@ import textwrap
 from pathlib import Path
 from typing import Literal, Tuple
 
+import urwid
 from pydantic import BaseModel, Field
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam as OpenAIMessageParam
@@ -505,7 +504,7 @@ def add_message(thread: Thread, message) -> None:
     thread.posts.append(post)
 
 
-def main(stdscr) -> None:
+def main() -> None:
     """Main function"""
     # topic = "Recommendations on fun and cheap games on Steam."
     # topic = "Tabby's Star, a mysterious star showing irregularly fluctuating luminosity."
@@ -532,53 +531,49 @@ def main(stdscr) -> None:
     system = System(gamemaster=load_gamemaster(), users=load_users())
     thread = init_thread(system, topic)
 
-    for _ in range(4):
-        stdscr.clear()
-        stdscr.addstr(format_thread(thread))
-        stdscr.refresh()
+    def update_thread_display(loop, user_data):
+        thread_display.set_text(format_thread(thread))
+        loop.set_alarm_in(0.1, update_thread_display)
 
-        # Create a new window for user input
-        input_window = curses.newwin(5, 60, stdscr.getmaxyx()[0] - 5, 0)
-        input_window.addstr(0, 0, "---> Want to post your message? (Y/n): ")
-        input_window.refresh()
-        ans = input_window.getkey()
-        input_window.clear()
-        input_window.refresh()
+    def handle_input(key):
+        if key == 'y' or key == 'Y':
+            input_box.set_caption("Enter your message:\n")
+            input_box.set_edit_text("")
+            frame.focus_position = 'footer'
+        elif key == 'n' or key == 'N':
+            update_thread_batch(system, thread, 3)
+            p = Path("test-thread.txt")
+            save_thread(p, thread)
+            thread_display.set_text(format_thread(thread))
+            input_box.set_caption("---> Want to post your message? (Y/n): ")
+            frame.focus_position = 'body'
+        else:
+            pass
 
-        if ans.lower() != 'n':
-            # Create a new window for displaying the instruction text
-            instruction_window = curses.newwin(1, 60, stdscr.getmaxyx()[0] - 6, 0)
-            instruction_window.addstr(0, 0, ">>> Press Ctl+G to finish <<<")
-            instruction_window.refresh()
+    def handle_message(widget, message):
+        if message:
+            add_message(thread, message)
+        else:
+            logging.warning("Empty message. Skipping...")
+        input_box.set_caption("---> Want to post your message? (Y/n): ")
+        frame.focus_position = 'body'
 
-            # Create a Textbox for user input
-            input_textbox = curses.textpad.Textbox(input_window)
-            input_textbox.edit()
-            message = input_textbox.gather().strip()
+    thread_display = urwid.Text(format_thread(thread))
+    input_box = urwid.Edit("---> Want to post your message? (Y/n): ", multiline=True)
+    input_box_wrap = urwid.AttrMap(input_box, 'input')
 
-            if message:
-                add_message(thread, message)
-            else:
-                logging.warning("Empty message. Skipping...")
+    footer = urwid.Pile([input_box_wrap])
+    frame = urwid.Frame(urwid.Filler(thread_display), footer=footer, focus_part='body')
 
-            # Clear the instruction window
-            instruction_window.clear()
-            instruction_window.refresh()
-            input_window.clear()
-            input_window.refresh()
+    loop = urwid.MainLoop(frame, unhandled_input=handle_input)
+    urwid.connect_signal(input_box, 'change', handle_message)
 
-        stdscr.addstr("\n\n ... waiting for response ...")
-        stdscr.refresh()
+    loop.set_alarm_in(0.1, update_thread_display)
+    loop.run()
 
-        update_thread_batch(system, thread, 3)
-        p = Path("test-thread.txt")
-        save_thread(p, thread)
-
-    stdscr.clear()
-    stdscr.addstr(format_thread(thread))
-    stdscr.refresh()
-    stdscr.addstr("\nPress any key to exit...")
-    stdscr.getch()
+    thread_display.set_text(format_thread(thread))
+    input_box.set_caption("Press 'q' to exit...")
+    loop.run()
 
 if __name__ == "__main__":
-    curses.wrapper(main)
+    main()
