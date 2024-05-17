@@ -3,6 +3,7 @@ Chat handler
 
 """
 import curses
+import curses.textpad
 import json
 import logging
 import os
@@ -504,18 +505,6 @@ def add_message(thread: Thread, message) -> None:
     thread.posts.append(post)
 
 
-def intervene(thread: Thread) -> None:
-    """Intervene in the thread"""
-    ans = input("Want to post your message? (Y/n): ")
-    if ans.strip().lower().startswith("n"):
-        return
-    message = input("Enter your message\n")
-    if not message.strip():
-        logging.warning("Empty message. Skipping...")
-        return
-    add_message(thread, message)
-
-
 def main(stdscr) -> None:
     """Main function"""
     # topic = "Recommendations on fun and cheap games on Steam."
@@ -548,17 +537,36 @@ def main(stdscr) -> None:
         stdscr.addstr(format_thread(thread))
         stdscr.refresh()
 
-        stdscr.addstr("\n\n\n---> Want to post your message? (Y/n): ")
-        ans = stdscr.getkey()
+        # Create a new window for user input
+        input_window = curses.newwin(5, 60, stdscr.getmaxyx()[0] - 5, 0)
+        input_window.addstr(0, 0, "---> Want to post your message? (Y/n): ")
+        input_window.refresh()
+        ans = input_window.getkey()
+        input_window.clear()
+        input_window.refresh()
+
         if ans.lower() != 'n':
-            stdscr.addstr("\n\nEnter your message\n")
-            curses.echo()
-            message = stdscr.getstr().decode('utf-8').strip()
-            curses.noecho()
+            # Create a new window for displaying the instruction text
+            instruction_window = curses.newwin(1, 60, stdscr.getmaxyx()[0] - 6, 0)
+            instruction_window.addstr(0, 0, ">>> Press Ctl+G to finish <<<")
+            instruction_window.refresh()
+
+            # Create a Textbox for user input
+            input_textbox = curses.textpad.Textbox(input_window)
+            input_textbox.edit()
+            message = input_textbox.gather().strip()
+
             if message:
                 add_message(thread, message)
             else:
                 logging.warning("Empty message. Skipping...")
+
+            # Clear the instruction window
+            instruction_window.clear()
+            instruction_window.refresh()
+            input_window.clear()
+            input_window.refresh()
+
         stdscr.addstr("\n\n ... waiting for response ...")
         stdscr.refresh()
 
