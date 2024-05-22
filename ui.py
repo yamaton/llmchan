@@ -62,7 +62,7 @@ class Chan(App):
 
     def compose(self) -> ComposeResult:
         yield Header(name="llmchan")
-        yield RichLog()
+        yield RichLog(wrap=True, id="rich_log")
         with Horizontal():
             yield TextArea(id="textarea", text="baba")
             yield Button("Submit", id="submit_button", variant="default")
