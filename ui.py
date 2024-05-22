@@ -39,8 +39,8 @@ class Chan(App):
     """
 
     BINDINGS = [
-        ("space", "toggle_comment", "Toggle Input Area"),
-        ("n", "load_post", "Load next post"),
+        ("escape", "toggle_comment", "Toggle Input Area"),
+        ("space", "load_post", "Load next post"),
         ("ctrl+s", "submit_text", "Submit text"),
     ]
 
