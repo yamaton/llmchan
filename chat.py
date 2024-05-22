@@ -2,8 +2,6 @@
 Chat handler
 
 """
-import curses
-import curses.textpad
 import json
 import logging
 import os
@@ -221,6 +219,13 @@ def load_gamemaster() -> GameMaster:
     userdata = data_list[0]  # [TODO] Hardcoded. Change later.
     gamemaster = GameMaster(**userdata, agent=agent)
     return gamemaster
+
+
+def init_system() -> System:
+    """Initialize the chat system"""
+    gamemaster = load_gamemaster()
+    users = load_users()
+    return System(gamemaster=gamemaster, users=users)
 
 
 def select_user(system: System, thread: Thread) -> User:
@@ -472,12 +477,13 @@ def init_thread(system: System, topic: str) -> Thread:
     return thread
 
 
-def update_thread(system: System, thread: Thread) -> None:
+def update_thread(system: System, thread: Thread) -> Post:
     """Extend thread"""
     logging.info("Updating the thread")
     user = select_user(system, thread)
     post = gen_post(user, thread)
     thread.posts.append(post)
+    return post
 
 
 def update_thread_batch(system: System, thread: Thread, n: int) -> None:
@@ -499,13 +505,14 @@ def load_thread(path: Path, id_: int = 0, topic: str = "") -> Thread:
     return parse_as_thread(text, id_, topic)
 
 
-def add_message(thread: Thread, message) -> None:
+def add_message(thread: Thread, message) -> Post:
     """Post a message from a user to the thread"""
     post = Post(id=thread.posts[-1].id + 1, username="Ready_Player_One", text=message)
     thread.posts.append(post)
+    return post
 
 
-def main(stdscr) -> None:
+def main() -> None:
     """Main function"""
     # topic = "Recommendations on fun and cheap games on Steam."
     # topic = "Tabby's Star, a mysterious star showing irregularly fluctuating luminosity."
@@ -529,56 +536,12 @@ def main(stdscr) -> None:
     log_handler = logging.FileHandler(f"{topic[:30]}.log")
     logging.basicConfig(level=logging.INFO, handlers=[log_handler])
 
-    system = System(gamemaster=load_gamemaster(), users=load_users())
+    system = init_system()
     thread = init_thread(system, topic)
+    update_thread_batch(system, thread, 3)
+    p = Path("test-thread.txt")
+    save_thread(p, thread)
 
-    for _ in range(4):
-        stdscr.clear()
-        stdscr.addstr(format_thread(thread))
-        stdscr.refresh()
-
-        # Create a new window for user input
-        input_window = curses.newwin(5, 60, stdscr.getmaxyx()[0] - 5, 0)
-        input_window.addstr(0, 0, "---> Want to post your message? (Y/n): ")
-        input_window.refresh()
-        ans = input_window.getkey()
-        input_window.clear()
-        input_window.refresh()
-
-        if ans.lower() != 'n':
-            # Create a new window for displaying the instruction text
-            instruction_window = curses.newwin(1, 60, stdscr.getmaxyx()[0] - 6, 0)
-            instruction_window.addstr(0, 0, ">>> Press Ctl+G to finish <<<")
-            instruction_window.refresh()
-
-            # Create a Textbox for user input
-            input_textbox = curses.textpad.Textbox(input_window)
-            input_textbox.edit()
-            message = input_textbox.gather().strip()
-
-            if message:
-                add_message(thread, message)
-            else:
-                logging.warning("Empty message. Skipping...")
-
-            # Clear the instruction window
-            instruction_window.clear()
-            instruction_window.refresh()
-            input_window.clear()
-            input_window.refresh()
-
-        stdscr.addstr("\n\n ... waiting for response ...")
-        stdscr.refresh()
-
-        update_thread_batch(system, thread, 3)
-        p = Path("test-thread.txt")
-        save_thread(p, thread)
-
-    stdscr.clear()
-    stdscr.addstr(format_thread(thread))
-    stdscr.refresh()
-    stdscr.addstr("\nPress any key to exit...")
-    stdscr.getch()
 
 if __name__ == "__main__":
-    curses.wrapper(main)
+    main()
