@@ -63,13 +63,13 @@ class Chan(App):
     def compose(self) -> ComposeResult:
         yield Header(name="llmchan")
         yield RichLog(wrap=True, id="rich_log")
-        with Horizontal():
-            yield TextArea(id="textarea", text="baba")
+        with Horizontal(id="userinput"):
+            yield TextArea(id="textarea")
             yield Button("Submit", id="submit_button", variant="default")
         yield Footer()
 
     def action_toggle_comment(self) -> None:
-        """Action to toggle adding to the log."""
+        """Action to toggle the user-input area."""
         logging.info("Called: action_toggle_comment")
         comment = self.query_one(Horizontal)
         if comment.has_class("hidden"):
