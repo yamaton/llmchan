@@ -26,16 +26,20 @@ class Chan(App):
         ("escape", "toggle_comment", "Toggle Input Area"),
         ("space", "load_post", "Load next post"),
         ("ctrl+s", "submit_text", "Submit text"),
+        ("i", "choose_topic", "Choose topic"),
     ]
 
     system = chat.init_system()
-    thread = chat.init_thread(system, TOPIC)
     saveid = chat.gen_unique_id()
+    thread: chat.Thread | None = None
 
     def on_ready(self) -> None:
         """Called when the app is ready."""
         rich_log = self.query_one(RichLog)
-        s = chat.format_thread(self.thread)
+        if self.thread:
+            s = chat.format_thread(self.thread)
+        else:
+            s = "(No thread loaded.)"
         rich_log.write(s)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -67,7 +71,7 @@ class Chan(App):
         text_area = self.query_one(TextArea)
         rich_log = self.query_one(RichLog)
         comment = text_area.text.strip()
-        if comment:
+        if comment and self.thread:
             text_area.text = ""
             post = chat.add_message(self.thread, comment)
             s = chat.format_post_with_username(post)
@@ -77,12 +81,22 @@ class Chan(App):
     def action_load_post(self) -> None:
         """Action to load the next post."""
         logging.info("Called: action_load_post")
+        if self.thread:
+            rich_log = self.query_one(RichLog)
+            post = chat.update_thread(self.system, self.thread)
+            s = chat.format_post_with_username(post)
+            rich_log.write("\n\n" + s)
+            p = Path(f"{PATH_BASE}_{self.thread.topic[:10]}_{self.saveid}.txt")
+            chat.save_thread(p, self.thread)
+
+    def action_choose_topic(self) -> None:
+        """Action to choose a topic."""
+        logging.info("Called: action_choose_topic")
+        self.thread = chat.init_thread(self.system, TOPIC)
         rich_log = self.query_one(RichLog)
-        post = chat.update_thread(self.system, self.thread)
-        s = chat.format_post_with_username(post)
-        rich_log.write("\n\n" + s)
-        p = Path(f"{PATH_BASE}_{self.thread.topic[:10]}_{self.saveid}.txt")
-        chat.save_thread(p, self.thread)
+        rich_log.clear()
+        s = chat.format_thread(self.thread)
+        rich_log.write(s)
 
 
 if __name__ == "__main__":
