@@ -20,23 +20,7 @@ PATH_THREAD = Path("thread.txt")
 
 class Chan(App):
 
-    CSS = """
-    Horizontal {
-        height: 10;
-    }
-
-    Button {
-        margin: 1;
-    }
-
-    TextArea {
-        margin: 1 1;
-    }
-
-    .hidden {
-        display: none;
-    }
-    """
+    CSS_PATH = "llmchan.tcss"
 
     BINDINGS = [
         ("escape", "toggle_comment", "Toggle Input Area"),

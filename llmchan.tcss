@@ -1,0 +1,15 @@
+Horizontal {
+    height: 10;
+}
+
+Button {
+    margin: 1;
+}
+
+TextArea {
+    margin: 1 1;
+}
+
+.hidden {
+    display: none;
+}
