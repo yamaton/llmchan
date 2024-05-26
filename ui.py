@@ -32,6 +32,7 @@ class Chan(App):
     system = chat.init_system()
     saveid = chat.gen_unique_id()
     thread: chat.Thread | None = None
+    lang: chat.Language = "en"
 
     def on_ready(self) -> None:
         """Called when the app is ready."""

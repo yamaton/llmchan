@@ -30,6 +30,26 @@ Model = Literal[
     "claude-3-opus-20240229",
 ]
 
+Language = Literal[
+    "en",
+    "ja",
+    "es",
+    "ru",
+    "fr",
+    "de",
+    "it",
+    "pt",
+    "ko",
+    "zh",
+    "ar",
+    "hi",
+    "tr",
+    "vi",
+    "th",
+    "id",
+]
+
+
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", None)
 if OPENAI_API_KEY is None:
     raise ValueError("Failed to get env $OPENAI_API_KEY")
@@ -42,21 +62,26 @@ TMP_MODEL: Model = "gpt-4o-2024-05-13"
 
 # [TODO] Move to a separate file
 # For multi-lingual support
-USE_JAPANESE = "Use Japanese language only; 日本語で答えてください。"
-USE_SPANISH = "Use Spanish language only; Responde en español, por favor."
-USE_RUSSIAN = "Use Russian language only; Ответьте на русском языке, пожалуйста."
-USE_FRENCH = "Use French language only; Répondez en français, s'il vous plaît."
-USE_GERMAN = "Use German language only; Bitte antworten Sie auf Deutsch."
-USE_ITALIAN = "Use Italian language only; Rispondi in italiano, per favore."
-USE_PORTUGUESE = "Use Portuguese language only; Responda em português, por favor."
-USE_KOREAN = "Use Korean language only; 한국어로 답변해주세요."
-USE_CHINESE = "Use Chinese language only; 请用中文回答。"
-USE_ARABIC = "Use Arabic language only; أجب باللغة العربية من فضلك."
-USE_HINDI = "Use Hindi language only; कृपया हिंदी में जवाब दें।"
-USE_TURKISH = "Use Turkish language only; Lütfen Türkçe cevap verin."
-USE_VIETNAMESE = "Use Vietnamese language only; Trả lời bằng tiếng Việt, xin cảm ơn."
-USE_THAI = "Use Thai language only; โปรดตอบด้วยภาษาไทย"
-USE_INDONESIAN = "Use Indonesian language only; Tolong jawab dalam bahasa Indonesia."
+
+
+LangPromptDict: dict[Language, str] = {
+    "en": "",
+    "ja": "Use Japanese language only; 日本語で答えてください。",
+    "es": "Use Spanish language only; Responde en español, por favor.",
+    "ru": "Use Russian language only; Ответьте на русском языке, пожалуйста.",
+    "fr": "Use French language only; Répondez en français, s'il vous plaît.",
+    "de": "Use German language only; Bitte antworten Sie auf Deutsch.",
+    "it": "Use Italian language only; Rispondi in italiano, per favore.",
+    "pt": "Use Portuguese language only; Responda em português, por favor.",
+    "ko": "Use Korean language only; 한국어로 답변해주세요.",
+    "zh": "Use Chinese language only; 请用中文回答。",
+    "ar": "Use Arabic language only; أجب باللغة العربية من فضلك.",
+    "hi": "Use Hindi language only; कृपया हिंदी में जवाब दें।",
+    "tr": "Use Turkish language only; Lütfen Türkçe cevap verin.",
+    "vi": "Use Vietnamese language only; Trả lời bằng tiếng Việt, xin cảm ơn.",
+    "th": "Use Thai language only; โปรดตอบด้วยภาษาไทย",
+    "id": "Use Indonesian language only; Tolong jawab dalam bahasa Indonesia.",
+}
 
 
 class Agent(BaseModel):
@@ -137,24 +162,41 @@ class AnthropicAgent(BaseModel):
         return response.content[0].text
 
 
+class LangAgent(Agent):
+
+    lang: Language = Field("en", description="Language to use for the response")
+
+    def generate(self, prompt: str, temperature: float, prefill: None | str = "") -> str:
+        """Generate a response based on the prompt."""
+        system_prompt = LangPromptDict[self.lang]
+        return super().generate(prompt, temperature, system_prompt, prefill)
+
+    def set_lang(self, language: Language):
+        """Set the language of the agent."""
+        self.lang = language
+
+
 class User(BaseModel):
     """User as a chart participant."""
 
     character: str
     role: str
-    agent: Agent
+    agent: LangAgent
 
     def generate(
         self,
         prompt: str,
         temperature: float = 1.0,
-        system_prompt: str = "",
         prefill: str | None = None,
     ) -> str:
         """Get a LLM response"""
         return self.agent.generate(
-            prompt, temperature, system_prompt=system_prompt, prefill=prefill
+            prompt, temperature, prefill=prefill
         )
+
+    def set_lang(self, language: Language):
+        """Set the language of the agent."""
+        self.agent.set_lang(language)
 
 
 class GameMaster(BaseModel):
@@ -206,7 +248,10 @@ def load_users() -> list[User]:
     with p.open("r", encoding="utf8") as f:
         users = []
         for userdata in json.load(f):
-            agent = Agent(model=TMP_MODEL)
+            if "lang" in userdata:
+                agent = LangAgent(model=TMP_MODEL, lang=userdata["lang"])
+            else:
+                agent = LangAgent(model=TMP_MODEL, lang="en")
             user = User(**userdata, agent=agent)
             users.append(user)
     return users
