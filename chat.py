@@ -521,27 +521,32 @@ def gen_unique_id() -> str:
     return s
 
 
+TOPICS = [
+    "Recommendations on fun and cheap games on Steam.",
+    "Tabby's Star, a mysterious star showing irregularly fluctuating luminosity.",
+    "Alternatives to Nvidia's CUDA in AI computation.",
+    "Issues in American political campaign financing, and how to fix it.",
+    "How does nature maintain biodiversity by overcoming the competitive exclusion principle?",
+    "How does the current AI hype end up in a bubble burst? Or, does it?",
+    "What happened to the Metaverse and VR/AR hype in the recent years?",
+    "源氏物語の宇治十帖について日本語で語り合いましょう。",
+    "マイナーだけど最高に面白いマンガについて語ろう。",
+    "What should aging societies like Japan and China do to maintain their economy?",
+    "How can we understand that 1 + 2 + 3 + ... = -1/12?",
+    textwrap.dedent("""
+    Suppose that $a$, $b$, $c$, $d$ are positive real numbers satisfying $(a + c)(b + d) = ac + bd$.
+    Find the smallest possible value of
+    $$
+    \frac{a}{b} + \frac{b}{c} + \frac{c}{d} + \frac{d}{a}.
+    $$
+    """).strip(),
+]
+
+
+
 def main() -> None:
     """Main function"""
-    # topic = "Recommendations on fun and cheap games on Steam."
-    # topic = "Tabby's Star, a mysterious star showing irregularly fluctuating luminosity."
-    # topic = "Alternatives to Nvidia's CUDA in AI computation."
-    # topic = "Issues in American political campaign financing, and how to fix it."
-    # topic = "How does nature maintain biodiversity by overcoming the competitive exclusion principle?"
-    # topic = "How does the current AI hype end up in a bubble burst? Or, does it?"
-    # topic = "What happened to the Metaverse and VR/AR hype in the recent years?"
-    # topic = "源氏物語の宇治十帖について日本語で語り合いましょう。"
-    # topic = "マイナーだけど最高に面白いマンガについて語ろう。"
-    # topic = "What should aging societies like Japan and China do to maintain their economy?"
-    topic = "How can we understand that 1 + 2 + 3 + ... = -1/12?"
-    # topic = textwrap.dedent("""
-    # Suppose that $a$, $b$, $c$, $d$ are positive real numbers satisfying $(a + c)(b + d) = ac + bd$.
-    # Find the smallest possible value of
-    # $$
-    # \frac{a}{b} + \frac{b}{c} + \frac{c}{d} + \frac{d}{a}.
-    # $$
-    # """).strip()
-
+    topic = random.choice(TOPICS)
     log_handler = logging.FileHandler(f"{topic[:30]}.log")
     logging.basicConfig(level=logging.INFO, handlers=[log_handler])
 

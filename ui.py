@@ -1,14 +1,12 @@
 import logging
 from pathlib import Path
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, TextArea, RichLog, Button
-from textual.containers import Horizontal
+from textual.widgets import Header, Footer, TextArea, RichLog, Button, Static
+from textual.containers import Horizontal, Vertical
 
 import chat
 
-# topic = "How can we understand that 1 + 2 + 3 + ... = -1/12?"
-topic = "マイナーだけど最高に面白いマンガについて語ろう。"
-
+TOPIC = chat.TOPICS[1]
 
 logging.basicConfig(
     level=logging.INFO,
@@ -31,9 +29,8 @@ class Chan(App):
     ]
 
     system = chat.init_system()
-    thread = chat.init_thread(system, topic)
+    thread = chat.init_thread(system, TOPIC)
     saveid = chat.gen_unique_id()
-
 
     def on_ready(self) -> None:
         """Called when the app is ready."""
@@ -48,6 +45,7 @@ class Chan(App):
             self.action_submit_text()
 
     def compose(self) -> ComposeResult:
+        """Compose the layout of the app."""
         yield Header(name="llmchan")
         yield RichLog(wrap=True, id="rich_log")
         with Horizontal(id="userinput"):
@@ -75,7 +73,6 @@ class Chan(App):
             s = chat.format_post_with_username(post)
             rich_log.write("\n\n" + s)
             logging.info("Comment: %s", comment)
-
 
     def action_load_post(self) -> None:
         """Action to load the next post."""
