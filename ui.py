@@ -15,7 +15,7 @@ logging.basicConfig(
     filename="myapp.log",
 )
 
-PATH_THREAD = Path("thread.txt")
+PATH_BASE = Path("chanlog")
 
 
 class Chan(App):
@@ -32,6 +32,7 @@ class Chan(App):
 
     system = chat.init_system()
     thread = chat.init_thread(system, topic)
+    saveid = chat.gen_unique_id()
 
 
     def on_ready(self) -> None:
@@ -83,7 +84,8 @@ class Chan(App):
         post = chat.update_thread(self.system, self.thread)
         s = chat.format_post_with_username(post)
         rich_log.write("\n\n" + s)
-        chat.save_thread(PATH_THREAD, self.thread)
+        p = Path(f"{PATH_BASE}_{self.thread.topic[:10]}_{self.saveid}.txt")
+        chat.save_thread(p, self.thread)
 
 
 if __name__ == "__main__":

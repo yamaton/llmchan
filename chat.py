@@ -2,12 +2,15 @@
 Chat handler
 
 """
+
+import base64
 import json
 import logging
 import os
 import random
 import re
 import textwrap
+import uuid
 from pathlib import Path
 from typing import Literal, Tuple
 
@@ -510,6 +513,12 @@ def add_message(thread: Thread, message) -> Post:
     post = Post(id=thread.posts[-1].id + 1, username="Ready_Player_One", text=message)
     thread.posts.append(post)
     return post
+
+def gen_unique_id() -> str:
+    """Generate a short unique ID."""
+    u = uuid.uuid4()
+    s = base64.urlsafe_b64encode(u.bytes).rstrip(b'=').decode('utf-8')
+    return s
 
 
 def main() -> None:
