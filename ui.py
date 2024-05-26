@@ -20,6 +20,8 @@ PATH_THREAD = Path("thread.txt")
 
 class Chan(App):
 
+    TITLE = "llmchan"
+    SUB_TITLE = "A discussion board"
     CSS_PATH = "llmchan.tcss"
 
     BINDINGS = [
