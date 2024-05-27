@@ -565,6 +565,7 @@ def gen_unique_id() -> str:
     s = base64.urlsafe_b64encode(u.bytes).rstrip(b'=').decode('utf-8')
     return s
 
+OTHER_TOPIC = "Other ..."
 
 TOPICS = [
     "Recommendations on fun and cheap games on Steam.",
@@ -585,8 +586,8 @@ TOPICS = [
     \frac{a}{b} + \frac{b}{c} + \frac{c}{d} + \frac{d}{a}.
     $$
     """).strip(),
+    OTHER_TOPIC,  # this activates the user input box
 ]
-
 
 
 def main() -> None:

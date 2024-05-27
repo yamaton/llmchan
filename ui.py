@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from textual import on
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, TextArea, RichLog, Button, Static, Select
+from textual.widgets import Header, Footer, TextArea, RichLog, Button, Static, Select, Input
 from textual.containers import Horizontal, Vertical
 
 import chat
@@ -16,7 +16,22 @@ logging.basicConfig(
 
 PATH_BASE = Path("chanlog")
 Languages: list[chat.Language] = [
-    "en", "ja", "es", "ru", "fr", "de", "it", "pt", "ko", "zh", "ar", "hi", "tr", "vi", "th", "id"
+    "en",
+    "ja",
+    "es",
+    "ru",
+    "fr",
+    "de",
+    "it",
+    "pt",
+    "ko",
+    "zh",
+    "ar",
+    "hi",
+    "tr",
+    "vi",
+    "th",
+    "id",
 ]
 
 
@@ -41,11 +56,13 @@ class Chan(App):
     def compose(self) -> ComposeResult:
         """Compose the layout of the app."""
         yield Header(name="llmchan")
-        yield Select(
-            ((line, line) for line in chat.TOPICS),
-            prompt="Select a topic",
-            id="select_topic",
-        )
+        with Vertical(id="vertical_topic"):
+            yield Select(
+                ((line, line) for line in chat.TOPICS),
+                prompt="Select a topic",
+                id="select_topic",
+            )
+            yield Input(id="input_topic", placeholder="Enter a topic")
         yield Select(
             ((lang, lang) for lang in Languages),
             prompt="Select a language",
@@ -69,9 +86,8 @@ class Chan(App):
         # Configure Widgets
         select_topic: Select = self.query_one("#select_topic")  # type: ignore
         select_topic.expanded = True
-        select_lang = self.query_one("#select_lang")
-        select_lang.add_class("hidden")
-
+        self._hide("#input_topic")
+        self._hide("#select_lang")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Event handler called when a button is pressed."""
@@ -79,14 +95,17 @@ class Chan(App):
         if button_id == "submit_button":
             self.action_submit_text()
 
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Event handler called when an input is submitted."""
+        input_id = event.input.id
+        if input_id == "input_topic":
+            topic = event.input.value.strip()
+            self.select_topic(topic)
+
     def action_toggle_comment(self) -> None:
         """Action to toggle the user-input area."""
         logging.info("Called: action_toggle_comment")
-        comment = self.query_one(Horizontal)
-        if comment.has_class("hidden"):
-            comment.remove_class("hidden")
-        else:
-            comment.add_class("hidden")
+        self._toggle("#userinput")
 
     def action_submit_text(self) -> None:
         """Action to submit text from the text area."""
@@ -114,12 +133,7 @@ class Chan(App):
     def action_toggle_settings(self) -> None:
         """Action to toggle the settings."""
         logging.info("Called: action_toggle_settings")
-        select_lang = self.query_one("#select_lang")
-        if select_lang.has_class("hidden"):
-            select_lang.remove_class("hidden")
-        else:
-            select_lang.add_class("hidden")
-
+        self._toggle("#select_lang")
 
     def select_topic(self, topic: str) -> None:
         """Select a topic."""
@@ -132,29 +146,53 @@ class Chan(App):
         rich_log.write(s)
 
         # Hide the topic-selection widget
-        select_topic = self.query_one("#select_topic")
-        select_topic.add_class("hidden")
+        self._hide("#input_topic")
+        self._hide("#vertical_topic")
 
+    def show_input_topic(self) -> None:
+        """Show the topic input box."""
+        self._show("#input_topic")
+
+    def _hide(self, selector) -> None:
+        """Hide a widget."""
+        widget = self.query_one(selector)
+        if not widget.has_class("hidden"):
+            widget.add_class("hidden")
+
+    def _show(self, selector) -> None:
+        """Show a widget."""
+        widget = self.query_one(selector)
+        if widget.has_class("hidden"):
+            widget.remove_class("hidden")
+
+    def _toggle(self, selector) -> None:
+        """Toggle a widget."""
+        widget = self.query_one(selector)
+        if widget.has_class("hidden"):
+            widget.remove_class("hidden")
+        else:
+            widget.add_class("hidden")
 
     def select_lang(self, lang: chat.Language) -> None:
         """Select a language."""
         self.lang = lang
-        select_lang = self.query_one("#select_lang")
         for user in self.system.users:
             user.set_lang(lang)
-
-        select_lang.add_class("hidden")
+        self._hide("#select_lang")
         logging.info("Language: %s", lang)
-
 
     @on(Select.Changed)
     def select_changed(self, event: Select.Changed) -> None:
         """Event handler called when the select widget changes."""
         logging.info("Called: select_changed")
         if event.select.id == "select_lang":
-            self.select_lang(str(event.value))  # type: ignore
+            self.select_lang(str(event.value).strip())  # type: ignore
         elif event.select.id == "select_topic":
-            self.select_topic(str(event.value))
+            topic = str(event.value).strip()
+            if topic == chat.OTHER_TOPIC:
+                self.show_input_topic()
+            else:
+                self.select_topic(str(event.value))
 
 
 if __name__ == "__main__":
