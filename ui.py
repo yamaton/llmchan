@@ -42,9 +42,9 @@ class Chan(App):
     CSS_PATH = "llmchan.tcss"
 
     BINDINGS = [
-        ("escape", "toggle_comment", "Toggle Input Area"),
-        ("space", "load_post", "Load next post"),
-        ("ctrl+s", "submit_text", "Submit text"),
+        ("escape", "toggle_comment", "Toggle Input"),
+        ("space", "load_post", "Next"),
+        ("ctrl+s", "submit_text", "Submit"),
         ("i", "toggle_settings", "Toggle Settings"),
     ]
 
@@ -63,9 +63,9 @@ class Chan(App):
                 id="select_topic",
             )
             yield Input(id="input_topic", placeholder="Enter a topic")
-        yield Select(
-            ((lang, lang) for lang in Languages),
-            prompt="Select a language",
+        yield Select.from_values(
+            Languages,
+            prompt="Select language",
             id="select_lang",
         )
         yield RichLog(wrap=True, id="rich_log")

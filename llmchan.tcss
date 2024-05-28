@@ -13,3 +13,12 @@ TextArea {
 .hidden {
     display: none;
 }
+
+RichLog {
+    margin: 1;
+}
+
+Select {
+    margin: 1;
+    width: 70%;
+}
