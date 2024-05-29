@@ -3,7 +3,7 @@ import datetime
 from pathlib import Path
 from textual import on, work
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, TextArea, RichLog, Button, Static, Select, Input
+from textual.widgets import Header, Footer, TextArea, RichLog, Button, Static, Select, Input, LoadingIndicator
 from textual.containers import Horizontal, Vertical
 
 import chat
@@ -58,6 +58,7 @@ class Chan(App):
     def compose(self) -> ComposeResult:
         """Compose the layout of the app."""
         yield Header(name="llmchan")
+        yield LoadingIndicator()
         with Vertical(id="vertical_topic"):
             yield Select(
                 ((line, line) for line in chat.TOPICS),
@@ -90,6 +91,7 @@ class Chan(App):
         select_topic.expanded = True
         self._hide("#input_topic")
         self._hide("#select_lang")
+        self._hide(LoadingIndicator)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Event handler called when a button is pressed."""
@@ -127,12 +129,24 @@ class Chan(App):
         """Action to load the next post."""
         logging.info("[action_load_post]")
         if self.thread:
-            rich_log = self.query_one(RichLog)
+            # Show the loading indicator
+            indicator = self.query_one(LoadingIndicator)
+            indicator.display = True
+
+            # Update the thread by generating a post
             post = await chat.update_thread_async(self.system, self.thread)
+
+            # Update the display
             s = chat.format_post_with_username(post)
+            rich_log = self.query_one(RichLog)
             rich_log.write("\n\n" + s)
+
+            # Save the thread to a file
             p = Path(f"{PATH_BASE}_{self.thread.topic[:10]}_{self.saveid}.txt")
             chat.save_thread(p, self.thread)
+
+            # Hide the loading indicator
+            indicator.display = False
 
     def action_toggle_settings(self) -> None:
         """Action to toggle the settings."""
@@ -142,6 +156,12 @@ class Chan(App):
     @work
     async def generate_initial_post(self, topic: str) -> None:
         """Select a topic."""
+        # Show the loading indicator
+        logging.info("[generate_initial_post] %s", topic)
+        indicator = self.query_one(LoadingIndicator)
+        indicator.display = True
+
+        # Generate the ininital post
         self.thread = await chat.init_thread_async(self.system, topic)
 
         # Initialize the thread display
@@ -153,6 +173,9 @@ class Chan(App):
         # Hide the topic-selection widget
         self._hide("#input_topic")
         self._hide("#vertical_topic")
+
+        # Hide the loading indicator
+        indicator.display = False
 
     def show_input_topic(self) -> None:
         """Show the topic input box."""
