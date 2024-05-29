@@ -1,7 +1,7 @@
 import logging
 import datetime
 from pathlib import Path
-from textual import on
+from textual import on, work
 from textual.app import App, ComposeResult
 from textual.widgets import Header, Footer, TextArea, RichLog, Button, Static, Select, Input
 from textual.containers import Horizontal, Vertical
@@ -102,7 +102,7 @@ class Chan(App):
         input_id = event.input.id
         if input_id == "input_topic":
             topic = event.input.value.strip()
-            self.select_topic(topic)
+            self.generate_initial_post(topic)
 
     def action_toggle_comment(self) -> None:
         """Action to toggle the user-input area."""
@@ -122,12 +122,13 @@ class Chan(App):
             rich_log.write("\n\n" + s)
             logging.info("Comment: %s", comment)
 
-    def action_load_post(self) -> None:
+    @work
+    async def action_load_post(self) -> None:
         """Action to load the next post."""
         logging.info("[action_load_post]")
         if self.thread:
             rich_log = self.query_one(RichLog)
-            post = chat.update_thread(self.system, self.thread)
+            post = await chat.update_thread_async(self.system, self.thread)
             s = chat.format_post_with_username(post)
             rich_log.write("\n\n" + s)
             p = Path(f"{PATH_BASE}_{self.thread.topic[:10]}_{self.saveid}.txt")
@@ -138,9 +139,10 @@ class Chan(App):
         logging.info("[action_toggle_settings]")
         self._toggle("#select_lang")
 
-    def select_topic(self, topic: str) -> None:
+    @work
+    async def generate_initial_post(self, topic: str) -> None:
         """Select a topic."""
-        self.thread = chat.init_thread(self.system, topic)
+        self.thread = await chat.init_thread_async(self.system, topic)
 
         # Initialize the thread display
         rich_log = self.query_one(RichLog)
@@ -190,7 +192,7 @@ class Chan(App):
             if topic == chat.OTHER_TOPIC:
                 self.show_input_topic()
             else:
-                self.select_topic(str(event.value))
+                self.generate_initial_post(str(event.value))
 
 
 if __name__ == "__main__":

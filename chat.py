@@ -2,7 +2,8 @@
 Chat handler
 
 """
-
+import asyncio
+import concurrent.futures
 import base64
 import json
 import logging
@@ -524,6 +525,14 @@ def init_thread(system: System, topic: str) -> Thread:
     return thread
 
 
+async def init_thread_async(system: System, topic: str) -> Thread:
+    """Async version of init_thread"""
+    loop = asyncio.get_event_loop()
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        result = await loop.run_in_executor(executor, init_thread, system, topic)
+    return result
+
+
 def update_thread(system: System, thread: Thread) -> Post:
     """Extend thread"""
     logging.info("[update_thread] selecting a user")
@@ -532,6 +541,15 @@ def update_thread(system: System, thread: Thread) -> Post:
     post = gen_post(user, thread)
     thread.posts.append(post)
     return post
+
+
+async def update_thread_async(system: System, thread: Thread) -> Post:
+    """Extend thread"""
+    logging.info("[update_thread] selecting a user")
+    loop = asyncio.get_event_loop()
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        result = await loop.run_in_executor(executor, update_thread, system, thread)
+    return result
 
 
 def update_thread_batch(system: System, thread: Thread, n: int) -> None:
