@@ -159,22 +159,17 @@ class Chan(App):
     def _hide(self, selector) -> None:
         """Hide a widget."""
         widget = self.query_one(selector)
-        if not widget.has_class("hidden"):
-            widget.add_class("hidden")
+        widget.display = False
 
     def _show(self, selector) -> None:
         """Show a widget."""
         widget = self.query_one(selector)
-        if widget.has_class("hidden"):
-            widget.remove_class("hidden")
+        widget.display = True
 
     def _toggle(self, selector) -> None:
         """Toggle a widget."""
         widget = self.query_one(selector)
-        if widget.has_class("hidden"):
-            widget.remove_class("hidden")
-        else:
-            widget.add_class("hidden")
+        widget.display = not widget.display
 
     def select_lang(self, lang: chat.Language) -> None:
         """Select a language."""
