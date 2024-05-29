@@ -18,7 +18,14 @@ RichLog {
     margin: 1;
 }
 
+#vertical_topic {
+    width: 70%;
+}
+
 Select {
     margin: 1;
-    width: 70%;
+}
+
+Input {
+    margin: 1;
 }
