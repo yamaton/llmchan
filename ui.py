@@ -3,7 +3,16 @@ import datetime
 from pathlib import Path
 from textual import on, work
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, TextArea, RichLog, Button, Static, Select, Input, LoadingIndicator
+from textual.widgets import (
+    Header,
+    Footer,
+    TextArea,
+    RichLog,
+    Button,
+    Select,
+    Input,
+    LoadingIndicator,
+)
 from textual.containers import Horizontal, Vertical
 
 import chat
@@ -115,14 +124,17 @@ class Chan(App):
         """Action to submit text from the text area."""
         logging.info("[action_submit_text]")
         text_area = self.query_one(TextArea)
-        rich_log = self.query_one(RichLog)
         comment = text_area.text.strip()
-        if comment and self.thread:
+        if comment:
+            if self.thread:
+                post = chat.add_message(self.thread, comment)
+                self._add_to_log(post)
+            else:
+                # Initialize the thread manually
+                self.initialize_thread_manually(comment)
+                if self.thread is None:
+                    raise ValueError("Thread is None. Failed to initialize.")
             text_area.text = ""
-            post = chat.add_message(self.thread, comment)
-            s = chat.format_post_with_username(post)
-            rich_log.write("\n\n" + s)
-            logging.info("Comment: %s", comment)
 
     @work
     async def action_load_post(self) -> None:
@@ -137,9 +149,7 @@ class Chan(App):
             post = await chat.update_thread_async(self.system, self.thread)
 
             # Update the display
-            s = chat.format_post_with_username(post)
-            rich_log = self.query_one(RichLog)
-            rich_log.write("\n\n" + s)
+            self._add_to_log(post)
 
             # Save the thread to a file
             p = Path(f"{PATH_BASE}_{self.thread.topic[:10]}_{self.saveid}.txt")
@@ -155,7 +165,7 @@ class Chan(App):
 
     @work
     async def generate_initial_post(self, topic: str) -> None:
-        """Select a topic."""
+        """Generate an initial post and a thread."""
         # Show the loading indicator
         logging.info("[generate_initial_post] %s", topic)
         indicator = self.query_one(LoadingIndicator)
@@ -176,6 +186,21 @@ class Chan(App):
 
         # Hide the loading indicator
         indicator.display = False
+
+    def initialize_thread_manually(self, text: str) -> None:
+        """Initialize thread manually."""
+        # Generate the ininital post
+        self.thread = chat.create_thread_from_text(text)
+
+        # Initialize the thread display
+        rich_log = self.query_one(RichLog)
+        rich_log.clear()
+        s = chat.format_thread(self.thread)
+        rich_log.write(s)
+
+        # Hide the topic-selection widget
+        self._hide("#input_topic")
+        self._hide("#vertical_topic")
 
     def show_input_topic(self) -> None:
         """Show the topic input box."""
@@ -203,6 +228,14 @@ class Chan(App):
             user.set_lang(lang)
         self._hide("#select_lang")
         logging.info("Language: %s", lang)
+
+    def _add_to_log(self, post: chat.Post) -> None:
+        """Add a string to the log."""
+        rich_log = self.query_one(RichLog)
+        s = chat.format_post_with_username(post)
+        rich_log.write("\n\n")
+        rich_log.write(s)
+        logging.info("Comment: %s", post.text)
 
     @on(Select.Changed)
     def select_changed(self, event: Select.Changed) -> None:
