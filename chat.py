@@ -190,9 +190,7 @@ class User(BaseModel):
         prefill: str | None = None,
     ) -> str:
         """Get a LLM response"""
-        return self.agent.generate(
-            prompt, temperature, prefill=prefill
-        )
+        return self.agent.generate(prompt, temperature, prefill=prefill)
 
     def set_lang(self, language: Language):
         """Set the language of the agent."""
@@ -279,11 +277,12 @@ def init_system() -> System:
 def select_user(system: System, thread: Thread) -> User:
     """Select a user posting next"""
     prompt = _get_user_selection_prompt(system=system, thread=thread)
-    logging.debug(f"Prompt to select a user: {prompt}")
-    logging.info("Selecting a user to post next")
+    logging.info("[select_user]")
+    logging.debug(f"[select_user] prompt: {prompt}")
     response = system.gamemaster.generate(prompt, prefill="User: ")
     if not response or not response.startswith("User: "):
         raise ValueError(f"LLM behaving weird: {response}")
+    logging.debug(f"[select_user] response:\n{response}")
 
     r = response.lower()
     for user in system.users:
@@ -293,11 +292,11 @@ def select_user(system: System, thread: Thread) -> User:
     else:
         selected = random.choice(system.users)
         if "random" in r:
-            logging.info(f"LLM response: {response}")
+            logging.info(f"[select_user] choosing random user.")
         else:
-            logging.warning(f"[Fallback] LLM response: {r}")
+            logging.warning(f"[select_user] [FALLBACK] LLM response:\n{r}")
 
-    logging.info(f"Chosen user: {selected.character}")
+    logging.info(f"[select_user] choice: {selected.character}")
     return selected
 
 
@@ -305,11 +304,10 @@ def gen_post(user: User, thread: Thread) -> Post:
     """Generate a post for the user."""
     id_ = thread.posts[-1].id + 1 if thread.posts else 1
     prompt = _get_user_prompt(user, thread)
-    logging.debug(f"Prompt for post generation: {prompt}")
-    logging.info(f"Generating post for {user.character}")
+    logging.info(f"[gen_post] for {user.character}")
+    logging.debug(f"[gen_post] prompt:\n{prompt}")
     text = user.generate(prompt, temperature=0.9)
-    # [TODO] Switch to Japanese
-    # text = user.generate(prompt, temperature=0.9, system_prompt=USE_JAPANESE)
+    logging.debug(f"[gen_post] response:\n{text}")
     if text is None:
         raise ValueError("Failed to generate text.")
 
@@ -512,14 +510,14 @@ def parse_as_thread(text: str, id_: int, topic: str) -> Thread:
 
 
 def init_thread(system: System, topic: str) -> Thread:
-    """Create a thread"""
-    logging.info("Creating a new thread")
+    """Create a thread based on the topic."""
     prompt = _get_thread_opening_prompt(topic)
-    logging.debug(f"Prompt to start a thread: {prompt}")
+    logging.info("[init_thread] Generating an initial post.")
+    logging.debug(f"[init_thread] prompt:\n{prompt}")
     text = system.gamemaster.generate(prompt, temperature=0.9)
-    # [TODO] Switch to Japanese
-    # text = system.gamemaster.generate(prompt, temperature=0.9, system_prompt=USE_JAPANESE)
+    logging.debug(f"[init_thread] response:\n{text}")
     text = _clean_text(text)
+    logging.debug(f"[init_thread] response after cleaning: \n{text}")
     post = Post(id=0, username="OP", text=text)
     thread = Thread(id=0, topic=topic, posts=[post])
     return thread
@@ -527,8 +525,9 @@ def init_thread(system: System, topic: str) -> Thread:
 
 def update_thread(system: System, thread: Thread) -> Post:
     """Extend thread"""
-    logging.info("Updating the thread")
+    logging.info("[update_thread] selecting a user")
     user = select_user(system, thread)
+    logging.info("[update_thread] generating a post")
     post = gen_post(user, thread)
     thread.posts.append(post)
     return post
@@ -559,11 +558,13 @@ def add_message(thread: Thread, message) -> Post:
     thread.posts.append(post)
     return post
 
+
 def gen_unique_id() -> str:
     """Generate a short unique ID."""
     u = uuid.uuid4()
-    s = base64.urlsafe_b64encode(u.bytes).rstrip(b'=').decode('utf-8')
+    s = base64.urlsafe_b64encode(u.bytes).rstrip(b"=").decode("utf-8")
     return s
+
 
 OTHER_TOPIC = "Other ..."
 

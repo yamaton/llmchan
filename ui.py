@@ -1,4 +1,5 @@
 import logging
+import datetime
 from pathlib import Path
 from textual import on
 from textual.app import App, ComposeResult
@@ -9,9 +10,10 @@ import chat
 
 TOPIC = chat.TOPICS[1]
 
+nowstr = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 logging.basicConfig(
-    level=logging.INFO,
-    filename="myapp.log",
+    level=logging.DEBUG,
+    filename=f"myapp_{nowstr}.log",
 )
 
 PATH_BASE = Path("chanlog")
@@ -104,11 +106,12 @@ class Chan(App):
 
     def action_toggle_comment(self) -> None:
         """Action to toggle the user-input area."""
-        logging.info("Called: action_toggle_comment")
+        logging.info("[action_toggle_comment]")
         self._toggle("#userinput")
 
     def action_submit_text(self) -> None:
         """Action to submit text from the text area."""
+        logging.info("[action_submit_text]")
         text_area = self.query_one(TextArea)
         rich_log = self.query_one(RichLog)
         comment = text_area.text.strip()
@@ -121,7 +124,7 @@ class Chan(App):
 
     def action_load_post(self) -> None:
         """Action to load the next post."""
-        logging.info("Called: action_load_post")
+        logging.info("[action_load_post]")
         if self.thread:
             rich_log = self.query_one(RichLog)
             post = chat.update_thread(self.system, self.thread)
@@ -132,7 +135,7 @@ class Chan(App):
 
     def action_toggle_settings(self) -> None:
         """Action to toggle the settings."""
-        logging.info("Called: action_toggle_settings")
+        logging.info("[action_toggle_settings]")
         self._toggle("#select_lang")
 
     def select_topic(self, topic: str) -> None:
