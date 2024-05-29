@@ -354,11 +354,12 @@ def _get_user_prompt(user: User, thread: Thread) -> str:
 
         ### Role
         {textwrap.indent(user.role, " " * 8)}
+        Use the tone and style that fits your role.
 
         ### Thread format
 
         * Participants are anonymous and no usernames is displayed, but your own posts are marked with an asterisk `(*)`.
-        * You may use "->" to indicate replies, but omit reply to the thread opener. In other words, never use `-> [0]`. Use the format ` -> [3,5]` to reply to multiple posts, but never reply to more than two.
+        * You may use "->" to indicate replies **only if** it's really necessary. Alway omit reply to the thread opener: never use `-> [0]`. Use the format ` -> [3,5]` to reply to two posts. Never reply to more than two.
         * Keep a comment 1 to 5 senstences long.
         * The discussion is in the form of temporally-ordered messages as follows. (`<example>` and `</example>` are not part of the message.)
 
@@ -369,7 +370,7 @@ def _get_user_prompt(user: User, thread: Thread) -> str:
         [1]
         Stardew Valley is a must-play! It's a charming farming RPG with tons of content and replayability. Plus, it's often on sale for under $10.
 
-        [2] -> [1]
+        [2]
         I have never heard of Stardew Valley. Can I play it on my XBox? What is Steam btw?
         </example>
 
@@ -580,13 +581,15 @@ TOPICS = [
     "マイナーだけど最高に面白いマンガについて語ろう。",
     "What should aging societies like Japan and China do to maintain their economy?",
     "How can we understand that 1 + 2 + 3 + ... = -1/12?",
-    textwrap.dedent("""
-    Suppose that $a$, $b$, $c$, $d$ are positive real numbers satisfying $(a + c)(b + d) = ac + bd$.
-    Find the smallest possible value of
-    $$
-    \frac{a}{b} + \frac{b}{c} + \frac{c}{d} + \frac{d}{a}.
-    $$
-    """).strip(),
+    textwrap.dedent(
+        """\
+        Suppose that $a$, $b$, $c$, $d$ are positive real numbers satisfying $(a + c)(b + d) = ac + bd$.
+        Find the smallest possible value of
+        $$
+        \frac{a}{b} + \frac{b}{c} + \frac{c}{d} + \frac{d}{a}.
+        $$
+        """
+    ).strip(),
     OTHER_TOPIC,  # this activates the user input box
 ]
 
