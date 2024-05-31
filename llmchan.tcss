@@ -22,6 +22,10 @@ RichLog {
     width: 70%;
 }
 
+#buttons {
+    width: 17%;
+}
+
 Select {
     margin: 1;
 }

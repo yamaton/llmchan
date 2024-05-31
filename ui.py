@@ -83,7 +83,9 @@ class Chan(App):
         yield RichLog(wrap=True, id="rich_log")
         with Horizontal(id="userinput"):
             yield TextArea(id="textarea")
-            yield Button("Submit", id="submit_button", variant="default")
+            with Vertical(id="buttons"):
+                yield Button("Submit", id="submit_button", variant="default")
+                yield Button("Next", id="next_button", variant="default")
         yield Footer()
 
     def on_ready(self) -> None:
@@ -107,6 +109,8 @@ class Chan(App):
         button_id = event.button.id
         if button_id == "submit_button":
             self.action_submit_text()
+        elif button_id == "next_button" and self.thread:
+            self.action_load_post()
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         """Event handler called when an input is submitted."""
