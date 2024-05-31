@@ -188,9 +188,9 @@ class LangAgent(Agent):
 
     lang: Language = Field("en", description="Language to use for the response")
 
-    def generate(self, prompt: str, temperature: float, prefill: None | str = "") -> str:
+    def generate(self, prompt: str, temperature: float, system_prompt: str = "", prefill: None | str = "") -> str:
         """Generate a response based on the prompt."""
-        system_prompt = LangPromptDict[self.lang]
+        system_prompt = "\n\n".join([system_prompt, LangPromptDict[self.lang]]).strip()
         return super().generate(prompt, temperature, system_prompt, prefill)
 
     def set_lang(self, language: Language):
@@ -223,7 +223,7 @@ class GameMaster(BaseModel):
     """Game master controlling who to post next."""
 
     strategy: str
-    agent: Agent
+    agent: LangAgent
 
     def generate(
         self,
@@ -237,12 +237,22 @@ class GameMaster(BaseModel):
             prompt, temperature, system_prompt=system_prompt, prefill=prefill
         )
 
+    def set_lang(self, language: Language):
+        """Set the language of the agent."""
+        self.agent.set_lang(language)
+
 
 class System(BaseModel):
     """Chat system"""
 
     gamemaster: GameMaster
     users: list[User]
+
+    def set_lang(self, language: Language):
+        """Set the language of the agents."""
+        self.gamemaster.set_lang(language)
+        for user in self.users:
+            user.set_lang(language)
 
 
 class Post(BaseModel):
@@ -281,7 +291,7 @@ def load_gamemaster() -> GameMaster:
     """Load the game master from the JSON data file."""
     p = Path("data/strategies.json")
     with p.open("r", encoding="utf8") as f:
-        agent = Agent(model=TMP_MODEL)  # hardcoded for now
+        agent = LangAgent(model=TMP_MODEL, lang="en")  # hardcoded for now
         data_list = json.load(f)
 
     userdata = data_list[0]  # [TODO] Hardcoded. Change later.

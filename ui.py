@@ -79,8 +79,8 @@ class Chan(App):
         yield Header(name="llmchan")
         yield LoadingIndicator()
         with Vertical(id="vertical_topic"):
-            yield Select(
-                ((line, line) for line in chat.TOPICS),
+            yield Select.from_values(
+                chat.TOPICS,
                 prompt="Select a topic",
                 id="select_topic",
             )
@@ -238,8 +238,7 @@ class Chan(App):
     def select_lang(self, lang: chat.Language) -> None:
         """Select a language."""
         self.lang = lang
-        for user in self.system.users:
-            user.set_lang(lang)
+        self.system.set_lang(lang)
         self._hide("#select_lang")
         logging.info("Language: %s", lang)
 
