@@ -5,10 +5,11 @@ build-backend = "hatchling.build"
 [project]
 name = "llmchan"
 version = "0.1.0"
-description = "Let LLM agents discuss with each other"
+description = "Let multiple LLM agents discuss"
 authors = [{ name = "Yamato Matsuoka", email = "yamato.matsuoka@tritonlab.io" }]
 license = "MIT"
 readme = "README.md"
+requires-python = ">=3.10"
 keywords = ["pydantic", "openai", "dotenv"]
 classifiers = [
 "Programming Language :: Python :: 3",
@@ -18,8 +19,50 @@ classifiers = [
 "License :: OSI Approved :: MIT License",
 "Operating System :: OS Independent",
 ]
-dependencies = ["pydantic", "openai", "python-dotenv", "anthropic"]
-optional-dependencies.dev = ["pytest", "mypy", "pylint", "black"]
+dependencies = ["pydantic", "openai", "python-dotenv", "anthropic", "textual"]
 
 [project.urls]
+documentation = "https://github.com/yamaton/llmchan/#readme"
+Issues = "https://github.com/yamaton/llmchan/issues"
 repository = "https://github.com/yamaton/llmchan"
+
+[project.scripts]
+llmchan = "llmchan.ui:main"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.envs.types]
+extra-dependencies = [
+  "mypy>=1.0.0",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:llmchan tests}"
+
+[tool.coverage.run]
+source_pkgs = ["llmchan", "tests"]
+branch = true
+parallel = true
+
+[tool.coverage.paths]
+llmchan = ["llmchan", "*/llmchan/llmchan"]
+tests = ["tests", "*/llmchan/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
+
+[tool.hatch.build.targets.sdist]
+include = ["**"]
+
+[tool.hatch.build.targets.wheel]
+include = ["**"]
+
+[tool.hatch.build]
+include = [
+    "llmchan/data/*.json",
+    "llmchan/llmchan.tcss",
+]

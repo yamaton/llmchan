@@ -1,6 +1,7 @@
 import logging
 import datetime
 from pathlib import Path
+
 from textual import on, work
 from textual.app import App, ComposeResult
 from textual.widgets import (
@@ -15,7 +16,7 @@ from textual.widgets import (
 )
 from textual.containers import Horizontal, Vertical
 
-import chat
+from . import chat
 
 TOPIC = chat.TOPICS[1]
 
@@ -264,6 +265,10 @@ class Chan(App):
                 self.generate_initial_post(str(event.value))
 
 
-if __name__ == "__main__":
+def main() -> None:
     app = Chan()
     app.run()
+
+
+if __name__ == "__main__":
+    main()

@@ -274,7 +274,7 @@ class Thread(BaseModel):
 
 def load_users() -> list[User]:
     """Load users from the JSON data file."""
-    p = Path("data/users.json")
+    p = Path("llmchan/data/users.json")
     with p.open("r", encoding="utf8") as f:
         users = []
         for userdata in json.load(f):
@@ -289,7 +289,7 @@ def load_users() -> list[User]:
 
 def load_gamemaster() -> GameMaster:
     """Load the game master from the JSON data file."""
-    p = Path("data/strategies.json")
+    p = Path("llmchan/data/strategies.json")
     with p.open("r", encoding="utf8") as f:
         agent = LangAgent(model=TMP_MODEL, lang="en")  # hardcoded for now
         data_list = json.load(f)
