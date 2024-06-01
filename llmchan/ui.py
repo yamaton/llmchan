@@ -50,6 +50,11 @@ class Chan(App):
         """Compose the layout of the app."""
         yield Header(name="llmchan")
         yield LoadingIndicator()
+        yield Select.from_values(
+            localization.LangList,
+            prompt="Select language",
+            id="select_lang",
+        )
         with Vertical(id="vertical_topic"):
             yield Select.from_values(
                 chat.TOPICS,
@@ -57,11 +62,6 @@ class Chan(App):
                 id="select_topic",
             )
             yield Input(id="input_topic", placeholder="Enter a topic")
-        yield Select.from_values(
-            localization.LangList,
-            prompt="Select language",
-            id="select_lang",
-        )
         yield RichLog(wrap=True, id="rich_log")
         with Horizontal(id="userinput"):
             yield TextArea(id="textarea")
