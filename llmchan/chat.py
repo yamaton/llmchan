@@ -67,8 +67,8 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", None)
 if OPENAI_API_KEY is None:
     raise ValueError("Failed to get env $OPENAI_API_KEY")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", None)
-if ANTHROPIC_API_KEY is None:
-    raise ValueError("Failed to get env $ANTHROPIC_API_KEY")
+# if ANTHROPIC_API_KEY is None:
+#     raise ValueError("Failed to get env $ANTHROPIC_API_KEY")
 
 TMP_MODEL: Model = "gpt-4o-2024-05-13"
 
