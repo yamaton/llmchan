@@ -11,6 +11,7 @@ import logging
 import os
 import random
 import re
+import sys
 import textwrap
 import uuid
 from pathlib import Path
@@ -37,10 +38,10 @@ Model = Literal[
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", None)
 if OPENAI_API_KEY is None:
-    raise ValueError("Failed to get env $OPENAI_API_KEY")
+    print("Please set the environment variable OPENAI_API_KEY.")
+    print("Exiting...")
+    sys.exit(1)
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", None)
-# if ANTHROPIC_API_KEY is None:
-#     raise ValueError("Failed to get env $ANTHROPIC_API_KEY")
 
 TMP_MODEL: Model = "gpt-4o-2024-05-13"
 
