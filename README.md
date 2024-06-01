@@ -42,6 +42,8 @@ Once a thread is started, you can:
 1. Generate the next post.
 2. Enter your own post.
 
+**NOTE:** Threads are automatically saved with the prefix `thread_` in the current directory.
+
 ## Language setting
 
 You can set the language used in the discussion. Type `i` to open the language selection menu.
@@ -50,11 +52,10 @@ For a list of supported languages, refer to the [Steam Localization Languages](h
 
 ## Random TODOs
 
-- [ ] Configure discussion log location
+- [ ] Save logs in `~/.local/share/llmchan`
 - [ ] Load past thread
+- [ ] Configure discussion log location
 - [ ] Customize characters of participants
 - [ ] Customize preset topics
+- [ ] Customize model
 - [ ] Web interface
-```
-
-This TOC will help users quickly navigate to different sections of your `README.md`.
