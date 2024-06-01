@@ -17,6 +17,7 @@ from textual.widgets import (
 from textual.containers import Horizontal, Vertical
 
 from . import chat
+from . import localization
 
 nowstr = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 logging.basicConfig(
@@ -25,34 +26,6 @@ logging.basicConfig(
 )
 
 PATH_BASE = Path("thread")
-Languages: list[chat.Language] = [
-    "en",
-    "zh",
-    "hi",
-    "es",
-    "fr",
-    "ar",
-    "bn",
-    "pt",
-    "ru",
-    "ur",
-    "id",
-    "de",
-    "ja",
-    "pcm",
-    "arz",
-    "mr",
-    "te",
-    "tr",
-    "yue",
-    "ta",
-    "vi",
-    "tl",
-    "ko",
-    "it",
-    "th",
-    "goyu",
-]
 
 
 class Chan(App):
@@ -85,7 +58,7 @@ class Chan(App):
             )
             yield Input(id="input_topic", placeholder="Enter a topic")
         yield Select.from_values(
-            Languages,
+            localization.LangList,
             prompt="Select language",
             id="select_lang",
         )

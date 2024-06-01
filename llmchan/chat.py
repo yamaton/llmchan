@@ -2,6 +2,7 @@
 Chat handler
 
 """
+
 import asyncio
 import concurrent.futures
 import base64
@@ -23,43 +24,14 @@ from anthropic.types import MessageParam as AnthropicMessageParam
 from anthropic.types import Message as AnthropicMessage
 from dotenv import load_dotenv
 
+from .localization import Language, LangPromptDict
+
 load_dotenv()
 
 Model = Literal[
     "gpt-4-turbo-2024-04-09",
     "gpt-4o-2024-05-13",
     "claude-3-opus-20240229",
-]
-
-# https://en.wikipedia.org/wiki/List_of_languages_by_total_number_of_speakers
-# https://partner.steamgames.com/doc/store/localization/languages
-Language = Literal[
-    "en",
-    "zh",
-    "hi",
-    "es",
-    "fr",
-    "ar",
-    "bn",
-    "pt",
-    "ru",
-    "ur",
-    "id",
-    "de",
-    "ja",
-    "pcm",
-    "arz",
-    "mr",
-    "te",
-    "tr",
-    "yue",
-    "ta",
-    "vi",
-    "tl",
-    "ko",
-    "it",
-    "th",
-    "goyu",
 ]
 
 
@@ -71,39 +43,6 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", None)
 #     raise ValueError("Failed to get env $ANTHROPIC_API_KEY")
 
 TMP_MODEL: Model = "gpt-4o-2024-05-13"
-
-
-# [TODO] Move to a separate file
-# For multi-lingual support
-
-LangPromptDict: dict[Language, str] = {
-    "en": "",
-    "pt": "Use Portuguese language only; Responda em português, por favor.",
-    "es": "Use Spanish language only; Responde en español, por favor.",
-    "fr": "Use French language only; Répondez en français, s'il vous plaît.",
-    "de": "Use German language only; Bitte antworten Sie auf Deutsch.",
-    "it": "Use Italian language only; Rispondi in italiano, per favore.",
-    "ru": "Use Russian language only; Ответьте на русском языке, пожалуйста.",
-    "tr": "Use Turkish language only; Lütfen Türkçe cevap verin.",
-    "ar": "Use Arabic language only; أجب باللغة العربية من فضلك.",
-    "arz": "Use Egyptian Arabic language only; ارد عربي بس.",
-    "pcm": "Use Nigerian Pidgin language only; Abeg ansa for Nigerian Pidgin.",
-    "hi": "Use Hindi language only; कृपया हिंदी में जवाब दें।",
-    "bn": "Use Bengali language only; দয়া করে বাংলা ভাষায় উত্তর দিন।",
-    "mr": "Use Marathi language only; कृपया मराठी भाषेत उत्तर द्या.",
-    "ur": "Use Urdu language only; براہ کرم اردو زبان میں جواب دیں۔",
-    "te": "Use Telugu language only; దయచేసి తెలుగు భాషలో జవాబు ఇవ్వండి.",
-    "ta": "Use Tamil language only; தயவுசெய்து தமிழ் மொழியில் பதில் சொல்லவும்.",
-    "id": "Use Indonesian language only; Tolong jawab dalam bahasa Indonesia.",
-    "th": "Use Thai language only; โปรดตอบด้วยภาษาไทย",
-    "vi": "Use Vietnamese language only; Trả lời bằng tiếng Việt, xin cảm ơn.",
-    "tl": "Use Tagalog language only; Sagutin sa wikang Tagalog lamang.",
-    "zh": "Use Chinese language only; 请用中文回答。",
-    "yue": "Use Cantonese language only; 請用廣東話回答。",
-    "goyu": "Use Taiwnese Mandarin language only; 請用國語回答。",
-    "ko": "Use Korean language only; 한국어로 답변해주세요.",
-    "ja": "Use Japanese language only; 日本語で答えてください。",
-}
 
 
 class Agent(BaseModel):
@@ -188,7 +127,13 @@ class LangAgent(Agent):
 
     lang: Language = Field("en", description="Language to use for the response")
 
-    def generate(self, prompt: str, temperature: float, system_prompt: str = "", prefill: None | str = "") -> str:
+    def generate(
+        self,
+        prompt: str,
+        temperature: float,
+        system_prompt: str = "",
+        prefill: None | str = "",
+    ) -> str:
         """Generate a response based on the prompt."""
         system_prompt = "\n\n".join([system_prompt, LangPromptDict[self.lang]]).strip()
         return super().generate(prompt, temperature, system_prompt, prefill)
