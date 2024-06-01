@@ -18,15 +18,13 @@ from textual.containers import Horizontal, Vertical
 
 from . import chat
 
-TOPIC = chat.TOPICS[1]
-
 nowstr = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 logging.basicConfig(
-    level=logging.DEBUG,
-    filename=f"myapp_{nowstr}.log",
+    level=logging.INFO,
+    filename=f"llmchan_{nowstr}.log",
 )
 
-PATH_BASE = Path("chanlog")
+PATH_BASE = Path("thread")
 Languages: list[chat.Language] = [
     "en",
     "zh",
