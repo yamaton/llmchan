@@ -125,7 +125,7 @@ class AnthropicAgent(BaseModel):
 
 class LangAgent(Agent):
 
-    lang: Language = Field("en", description="Language to use for the response")
+    lang: Language = Field("english", description="Language to use for the response")
 
     def generate(
         self,
@@ -226,7 +226,7 @@ def load_users() -> list[User]:
             if "lang" in userdata:
                 agent = LangAgent(model=TMP_MODEL, lang=userdata["lang"])
             else:
-                agent = LangAgent(model=TMP_MODEL, lang="en")
+                agent = LangAgent(model=TMP_MODEL, lang="english")
             user = User(**userdata, agent=agent)
             users.append(user)
     return users
@@ -236,7 +236,7 @@ def load_gamemaster() -> GameMaster:
     """Load the game master from the JSON data file."""
     p = Path(__file__).parent / "data" / "strategies.json"
     with p.open("r", encoding="utf8") as f:
-        agent = LangAgent(model=TMP_MODEL, lang="en")  # hardcoded for now
+        agent = LangAgent(model=TMP_MODEL, lang="english")  # hardcoded for now
         data_list = json.load(f)
 
     userdata = data_list[0]  # [TODO] Hardcoded. Change later.

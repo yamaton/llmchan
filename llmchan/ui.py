@@ -44,7 +44,7 @@ class Chan(App):
     system = chat.init_system()
     saveid = chat.gen_unique_id()
     thread: chat.Thread | None = None
-    lang: chat.Language = "en"
+    lang: chat.Language = "english"
 
     def compose(self) -> ComposeResult:
         """Compose the layout of the app."""
