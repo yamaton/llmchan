@@ -253,7 +253,10 @@ def init_system() -> System:
 
 
 def select_user(system: System, thread: Thread) -> User:
-    """Select a user posting next"""
+    """Select a user posting next
+
+    NOTE: Require a LLM inquiery.
+    """
     prompt = _get_user_selection_prompt(system=system, thread=thread)
     logging.info("[select_user]")
     logging.debug(f"[select_user] prompt: {prompt}")
@@ -279,7 +282,10 @@ def select_user(system: System, thread: Thread) -> User:
 
 
 def gen_post(user: User, thread: Thread) -> Post:
-    """Generate a post for the user."""
+    """Generate a post for the user.
+
+    NOTE: Require a LLM inquiery.
+    """
     id_ = thread.posts[-1].id + 1 if thread.posts else 1
     prompt = _get_user_prompt(user, thread)
     logging.info(f"[gen_post] for {user.character}")
@@ -320,7 +326,7 @@ def _clean_text(text: str) -> str:
 
 
 def _get_user_prompt(user: User, thread: Thread) -> str:
-    """Generate a prompt for user content generation"""
+    """Prepare a prompt for user content generation"""
     s = f"""\
         ### Objective
 
@@ -364,7 +370,7 @@ def _get_user_prompt(user: User, thread: Thread) -> str:
 
 
 def _get_user_selection_prompt(system: System, thread: Thread) -> str:
-    """Select a user posting next"""
+    """Prepare a user-posting prompt"""
     users_str = "\n\n".join(format_user(x) for x in system.users)
     thread_str = format_thread(thread)
 
@@ -392,7 +398,7 @@ def _get_user_selection_prompt(system: System, thread: Thread) -> str:
 
 
 def _get_thread_opening_prompt(topic: str) -> str:
-    """Generate an OP comment creating a thread"""
+    """Prepare a prompt for OP post."""
     s = f"""\
         ### Objective
 
