@@ -551,14 +551,14 @@ def init_thread(system: System, topic: str) -> Thread:
     logging.debug(f"[init_thread] response:\n{text}")
     text = _clean_text(text)
     logging.debug(f"[init_thread] response after cleaning: \n{text}")
-    thread = create_thread_from_text(text)
+    thread = create_thread_from_text(text, topic)
     return thread
 
 
-def create_thread_from_text(text: str) -> Thread:
+def create_thread_from_text(text: str, topic: str = "__manual__") -> Thread:
     """Create a thread based on the topic."""
     post = Post(id=0, username="OP", text=text)
-    thread = Thread(id=0, topic="<manual_entry>", posts=[post])
+    thread = Thread(id=0, topic=topic, posts=[post])
     return thread
 
 
