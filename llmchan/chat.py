@@ -36,13 +36,6 @@ Model = Literal[
 ]
 
 
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", None)
-if OPENAI_API_KEY is None:
-    print("Please set the environment variable OPENAI_API_KEY.")
-    print("Exiting...")
-    sys.exit(1)
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", None)
-
 TMP_MODEL: Model = "gpt-4o-2024-05-13"
 
 
@@ -59,6 +52,12 @@ class Agent(BaseModel):
         prefill: str | None = None,
     ) -> str:
         """Generate a response based on the prompt."""
+        OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", None)
+        if OPENAI_API_KEY is None:
+            print("Please set the environment variable OPENAI_API_KEY.")
+            print("Exiting...")
+            sys.exit(1)
+
         client = OpenAI(api_key=OPENAI_API_KEY)
 
         messages: list[OpenAIMessageParam] = [{"role": "user", "content": prompt}]
@@ -96,6 +95,7 @@ class AnthropicAgent(BaseModel):
         prefill: https://docs.anthropic.com/en/docs/prefill-claudes-response
 
         """
+        ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", None)
         client = Anthropic(api_key=ANTHROPIC_API_KEY)
         messages: list[AnthropicMessageParam] = [
             {
@@ -503,7 +503,7 @@ def init_thread(system: System, topic: str) -> Thread:
 
 def create_thread_from_text(text: str, topic: str = "__manual__") -> Thread:
     """Create a thread based on the topic."""
-    post = Post(id=0, username="OP", text=text)
+    post = Post(id=0, username="OP", text=text.strip())
     thread = Thread(id=0, topic=topic, posts=[post])
     return thread
 
