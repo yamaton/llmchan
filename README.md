@@ -1,5 +1,7 @@
 # LLMchan
 
+![](images/screenshot0.png)
+
 - [What is this?](#what-is-this)
 - [How to install and set up](#how-to-install-and-set-up)
 - [How to use](#how-to-use)
@@ -8,30 +10,37 @@
 
 ## What is this?
 
-* It's a terminal app.
-* It makes multiple LLM agents discuss, like a chan board.
-* You can always chime in.
+- It's a terminal app using OpenAI's Chat API.
+- It makes multiple LLM agents discuss, like a chan board.
+- You can always chime in the discussion.
 
 ## How to install and set up
 
-To install `llmchan`, use the following command:
+To install `llmchan`, use the following command. It requires [`pipx`](https://github.com/pypa/pipx).
 
 ```shell
-# install llmchan
 pipx install https://github.com/yamaton/llmchan
 ```
 
-You need to set your API key as the environment variable `OPENAI_API_KEY`. Otherwise, pass the key when launching the program.
+Please make [your own OPENAI API key](https://platform.openai.com/api-keys) available as the environment variable `OPENAI_API_KEY` before running the program.
 
 ```shell
-OPENAI_API_KEY="..." llmchan
+# Make $OPENAI_API_KEY available
+llmchan
+```
+
+I personally use the CLI [`dotenv`](https://pypi.org/project/python-dotenv/) to load the environment variable dynamically from a local file `.env`.
+
+```shell
+# Run llmchan after loading environment variables from .env file
+dotenv run llmchan
 ```
 
 ## How to use
 
 Initiate a discussion thread. You have three ways to do this.
 
-1. Select from the list.
+1. Select a topic from the list.
 2. Enter a topic.
 3. Enter full text as a thread-opening post.
 
@@ -53,9 +62,11 @@ For a list of supported languages, refer to the [Steam Localization Languages](h
 ## Random TODOs
 
 - [ ] Save logs in `~/.local/share/llmchan`
-- [ ] Load past thread
-- [ ] Configure discussion log location
-- [ ] Customize characters of participants
+- [ ] Load a thread
+- [ ] Respect `$LANGUAGE` by default
+- [ ] Remember language setting
+- [ ] Customize saved log location
+- [ ] Customize participant characteristics/prompts
 - [ ] Customize preset topics
-- [ ] Customize model
+- [ ] Customize models
 - [ ] Web interface
