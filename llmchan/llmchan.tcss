@@ -19,7 +19,7 @@ RichLog {
 }
 
 #vertical_topic {
-    width: 70%;
+    width: 90%;
 }
 
 #buttons {
