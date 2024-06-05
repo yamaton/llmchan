@@ -32,6 +32,12 @@ llmchan = "llmchan.ui:main"
 [tool.hatch.metadata]
 allow-direct-references = true
 
+[tool.hatch.envs.default]
+dependencies = [
+    "pytest",
+    "black",
+]
+
 [tool.hatch.envs.types]
 extra-dependencies = [
   "mypy>=1.0.0",
