@@ -11,7 +11,6 @@ import logging
 import os
 import random
 import re
-import sys
 import textwrap
 import uuid
 from pathlib import Path
@@ -39,6 +38,12 @@ Model = Literal[
 TMP_MODEL: Model = "gpt-4o-2024-05-13"
 
 
+class APIKeyError(Exception):
+    """Raised when the API key is not set."""
+
+    pass
+
+
 class Agent(BaseModel):
     """OpenAI LLM Agent"""
 
@@ -54,9 +59,10 @@ class Agent(BaseModel):
         """Generate a response based on the prompt."""
         OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", None)
         if OPENAI_API_KEY is None:
-            print("Please set the environment variable OPENAI_API_KEY.")
-            print("Exiting...")
-            sys.exit(1)
+            logging.error(
+                "[APIKeyError] Please set the environment variable OPENAI_API_KEY."
+            )
+            raise APIKeyError("Please set the environment variable OPENAI_API_KEY.")
 
         client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -74,7 +80,10 @@ class Agent(BaseModel):
 
         res = chat_completion.choices[0].message.content
         if res is None:
-            raise ValueError("Failed to get a response from OpenAI LLM")
+            logging.error(
+                "[Agent.generate] OpenAI chat completion came with an empty text..."
+            )
+            raise ValueError("Failed to get a response from OpenAI.")
         return res
 
 
@@ -96,6 +105,12 @@ class AnthropicAgent(BaseModel):
 
         """
         ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", None)
+        if ANTHROPIC_API_KEY is None:
+            logging.error(
+                "[AnthropicAgent.generate] Please set the environment variable ANTHROPIC_API_KEY."
+            )
+            raise APIKeyError("Please set the environment variable ANTHROPIC_API_KEY.")
+
         client = Anthropic(api_key=ANTHROPIC_API_KEY)
         messages: list[AnthropicMessageParam] = [
             {
@@ -262,6 +277,7 @@ def select_user(system: System, thread: Thread) -> User:
     logging.debug(f"[select_user] prompt: {prompt}")
     response = system.gamemaster.generate(prompt, prefill="User: ")
     if not response or not response.startswith("User: "):
+        logging.error(f"[select_user] LLM behaving weird: {response}.")
         raise ValueError(f"LLM behaving weird: {response}")
     logging.debug(f"[select_user] response:\n{response}")
 
@@ -292,7 +308,8 @@ def gen_post(user: User, thread: Thread) -> Post:
     logging.debug(f"[gen_post] prompt:\n{prompt}")
     text = user.generate(prompt, temperature=0.9)
     logging.debug(f"[gen_post] response:\n{text}")
-    if text is None:
+    if not text:
+        logging.error("[gen_post] Failed to generate text.")
         raise ValueError("Failed to generate text.")
 
     in_reply_to = _extract_reply_to(text)
@@ -500,6 +517,9 @@ def init_thread(system: System, topic: str) -> Thread:
     logging.info("[init_thread] Generating an initial post.")
     logging.debug(f"[init_thread] prompt:\n{prompt}")
     text = system.gamemaster.generate(prompt, temperature=0.9)
+    if not text:
+        logging.error("[init_thread] Failed to generate the initial-post text.")
+        raise ValueError("Failed to generate the initial-post text.")
     logging.debug(f"[init_thread] response:\n{text}")
     text = _clean_text(text)
     logging.debug(f"[init_thread] response after cleaning: \n{text}")
