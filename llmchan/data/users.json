@@ -54,5 +54,9 @@
   {
     "character": "The_Sage",
     "role": "Offers wise and insightful perspectives that draw from personal experiences and deep reflection. This role provides profound insights and guidance, enriching the conversation with wisdom and thoughtfulness."
+  },
+  {
+    "character": "The_Historian",
+    "role": "Draws parallels between current events and historical contexts, providing valuable insights into the evolution of ideas and societies. This role helps in understanding the past to make sense of the present and anticipate the future."
   }
 ]
