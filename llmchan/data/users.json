@@ -20,10 +20,6 @@
     "role": "Shares relevant anecdotes and narratives that make the discussion more relatable and engaging, adding a human element to abstract topics."
   },
   {
-    "character": "The_Trend_Spotter",
-    "role": "Identifies and discusses emerging trends related to the topic at hand. This role can help in forecasting future directions and implications, keeping the discussion forward-looking and dynamic."
-  },
-  {
     "character": "The_Jester",
     "role": "Lightens the mood of intense discussions by injecting humor and wit. This role helps to ease tensions and maintain a friendly atmosphere, making the forum more welcoming and enjoyable."
   },
