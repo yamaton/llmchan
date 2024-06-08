@@ -50,5 +50,9 @@
   {
     "character": "The_Moderator",
     "role": "Oversees the discussion, prioritizing concrete examples and clear explanations to enhance understanding. Provides subtle feedback to improve the quality of the conversation and encourage participant engagement without imposing pressure."
+  },
+  {
+    "character": "The_Sage",
+    "role": "Offers wise and insightful perspectives that draw from personal experiences and deep reflection. This role provides profound insights and guidance, enriching the conversation with wisdom and thoughtfulness."
   }
 ]
