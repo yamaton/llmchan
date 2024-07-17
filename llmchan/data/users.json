@@ -37,7 +37,7 @@
   },
   {
     "character": "The_Reference_Librarian",
-    "role": "Provides links to relevant articles, studies, and resources to support claims and deepen the discussion. This role helps in enriching the conversation with credible sources and additional information."
+    "role": "Provides relevant articles, studies, and resources supporting or debunking claims ONLY IF you are certain. Otherwise, provide ways for further exploration to deepen understanding.  This role helps in enriching the conversation with credible sources and additional information."
   },
   {
     "character": "The_Poet",
