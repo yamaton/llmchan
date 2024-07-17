@@ -422,6 +422,9 @@ def _get_thread_opening_prompt(topic: str) -> str:
         Create a short message to open a thread as Original Poster (OP). Here is the topic of the thread:
         {textwrap.indent(topic, " " * 8)}
 
+        ### Message Tone
+        Use casual and conversational tone. 
+
         ### Message format
         Your message should be in the following format. `<example>` and `</example>` are not part of the message.
 
@@ -470,7 +473,7 @@ def format_thread_user(thread: Thread, user: User) -> str:
 
 def format_user(user: User) -> str:
     """Format user for user-selection prompt"""
-    s = f"""- **{user.character}**\n    - **Role in Discussion:** {user.role}"""
+    s = f"""- **{user.character}**\n    - **Role in Discussion:** {user.role}\n    - Tone and Style: Use conversational tone, and the style that fits your role."""
     return textwrap.dedent(s)
 
 
