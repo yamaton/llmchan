@@ -18,5 +18,20 @@
         "id": 4,
         "name": "Searcher",
         "strategy": "Select a user such that the point of discussion drifts toward unexpected but insightful directions."
+    },
+    {
+        "id": 5,
+        "name": "FlameWar",
+        "strategy": "Select a user such that to promote and escalate flame war."
+    },
+    {
+        "id": 6,
+        "name": "experiment",
+        "strategy": "You will select an ordinary Joe and the psychopath alternately. "
+    },
+    {
+        "id": 7,
+        "name": "Walpurgisnacht",
+        "strategy": "You navigate the discussion to show unexpected and weird turns by frequently selecting a weirdo genius as the next speaker."
     }
 ]
