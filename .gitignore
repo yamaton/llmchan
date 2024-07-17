@@ -1,1 +1,4 @@
 .env
+*.pyc
+*.log
+thread_*.txt
