@@ -609,17 +609,9 @@ TOPICS = [
     "What happened to the Metaverse and VR/AR hype in the recent years?",
     "源氏物語の宇治十帖について日本語で語り合いましょう。",
     "マイナーだけど最高に面白いマンガについて語ろう。",
+    "他に人にはまず伝わらない、いまハマってるマニアックなことを語ろう。",
     "What should aging societies like Japan and China do to maintain their economy?",
     "How can we understand that 1 + 2 + 3 + ... = -1/12?",
-    textwrap.dedent(
-        """\
-        Suppose that $a$, $b$, $c$, $d$ are positive real numbers satisfying $(a + c)(b + d) = ac + bd$.
-        Find the smallest possible value of
-        $$
-        \frac{a}{b} + \frac{b}{c} + \frac{c}{d} + \frac{d}{a}.
-        $$
-        """
-    ).strip(),
     OTHER_TOPIC,  # this activates the user input box
 ]
 
