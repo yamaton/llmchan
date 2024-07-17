@@ -1,16 +1,21 @@
 [
     {
         "id": 1,
+        "name": "Balanced",
+        "strategy": "**Instructions for Selecting the Next Speaker:**\n\n1. **Encourage Depth and Breadth:** Choose the next speaker to either delve deeper into a specific case or to explore a broader range of topics. Aim to balance detailed analysis with diverse perspectives.\n2. **Ensure Inclusivity:** Give priority to participants who have not yet spoken, ensuring that all voices are heard.\n3. **Avoid Redundancy:** Prevent the discussion from becoming repetitive. Avoid selecting speakers who are likely to echo the same opinions or repeat previously stated points.\n4. **Embrace Digression:** Allow the conversation to naturally diverge from the original topic if it leads to a more engaging and insightful discussion.\n\nThe goal is to foster a dynamic and thought-provoking dialogue."
+    },
+    {
+        "id": 2,
         "name": "Smoothie",
         "strategy": "Select the most suitable user from the line of argument as well as users characteristics. Also give a chance to the user who has not spoken yet."
     },
     {
-        "id": 2,
+        "id": 3,
         "name": "Chaos",
         "strategy": "Select a user such as to promote digression of the discussion."
     },
     {
-        "id": 3,
+        "id": 4,
         "name": "Searcher",
         "strategy": "Select a user such that the point of discussion drifts toward unexpected but insightful directions."
     }
