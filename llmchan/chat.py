@@ -31,11 +31,12 @@ load_dotenv()
 Model = Literal[
     "gpt-4-turbo-2024-04-09",
     "gpt-4o-2024-05-13",
+    "gpt-4o-mini-2024-07-18",
     "claude-3-opus-20240229",
 ]
 
 
-TMP_MODEL: Model = "gpt-4o-2024-05-13"
+TMP_MODEL: Model = "gpt-4o-mini-2024-07-18"
 
 
 class APIKeyError(Exception):
@@ -609,6 +610,7 @@ TOPICS = [
     "What Happened to the Metaverse and VR/AR Hype in Recent Years",
     "Share Your Current Obsession: Embrace the Niche and Unusual",
     "Discussing Lesser-Known but Incredibly Entertaining Manga",
+    "Discussing Favorite Science Fiction Novels",
     "Let's Discuss the Uji Chapters of The Tale of Genji",
     "What Should Aging Societies Like Japan and China Do to Maintain Their Economies?",
     "How can we understand 1 + 2 + 3 + ... = -1/12?",
