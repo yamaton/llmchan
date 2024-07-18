@@ -255,7 +255,7 @@ def load_gamemaster() -> GameMaster:
         agent = LangAgent(model=TMP_MODEL, lang="english")  # hardcoded for now
         data_list = json.load(f)
 
-    userdata = data_list[0]  # [TODO] Hardcoded. Change later.
+    userdata = data_list[-1]  # [TODO] Hardcoded. Change later.
     gamemaster = GameMaster(**userdata, agent=agent)
     return gamemaster
 
@@ -600,18 +600,18 @@ def gen_unique_id() -> str:
 OTHER_TOPIC = "Other ..."
 
 TOPICS = [
-    "Recommendations on fun and cheap games on Steam.",
-    "Tabby's Star, a mysterious star showing irregularly fluctuating luminosity.",
-    "Alternatives to Nvidia's CUDA in AI computation.",
-    "Issues in American political campaign financing, and how to fix it.",
-    "How does nature maintain biodiversity by overcoming the competitive exclusion principle?",
-    "How does the current AI hype end up in a bubble burst? Or, does it?",
-    "What happened to the Metaverse and VR/AR hype in the recent years?",
-    "源氏物語の宇治十帖について日本語で語り合いましょう。",
-    "マイナーだけど最高に面白いマンガについて語ろう。",
-    "他に人にはまず伝わらない、いまハマってるマニアックなことを語ろう。",
-    "What should aging societies like Japan and China do to maintain their economy?",
-    "How can we understand that 1 + 2 + 3 + ... = -1/12?",
+    "Recommendations for Fun and Affordable Games on Steam",
+    "Tabby's Star: A Mysterious Star with Irregularly Fluctuating Luminosity",
+    "Alternatives to Nvidia's CUDA in AI computation",
+    "Problems in American Political Campaign Financing and How to Fix Them",
+    "How Nature Maintains Biodiversity Despite the Competitive Exclusion Principle?",
+    "Will the Current AI Hype Lead to a Bubble Burst?",
+    "What Happened to the Metaverse and VR/AR Hype in Recent Years",
+    "Share Your Current Obsession: Embrace the Niche and Unusual",
+    "Discussing Lesser-Known but Incredibly Entertaining Manga",
+    "Let's Discuss the Uji Chapters of The Tale of Genji",
+    "What Should Aging Societies Like Japan and China Do to Maintain Their Economies?",
+    "How can we understand 1 + 2 + 3 + ... = -1/12?",
     OTHER_TOPIC,  # this activates the user input box
 ]
 
